@@ -1,0 +1,280 @@
+/** Bundled starter content. Importing never depends on copying public assets to Storage. */
+import { products } from "./legacy-catalog";
+import { journal, lookbook, brandArt } from "./editorial";
+import { journalBodies } from "./journal-content";
+import type { SitePage } from "../lib/site-content";
+
+export const legacyPages: SitePage[] = [
+  {
+    slug: "home",
+    title: "Home",
+    description: "GAMANA clothing, rooted in origin and made to move.",
+    active: true,
+    sections: [
+      {
+        id: "home-hero",
+        type: "hero",
+        visible: true,
+        eyebrow: "Drop 01 · Est. 2024",
+        title: "What grounds you. Moves you.",
+        body: "GAMANA is rooted in where you come from and built for where you are going.",
+        image: "/images/brand/street-sunset.jpg",
+        imageAlt: "GAMANA at sunset",
+        buttonLabel: "Shop the drop",
+        buttonHref: "/shop",
+        tone: "dark",
+      },
+      {
+        id: "home-collection",
+        type: "products",
+        visible: true,
+        eyebrow: "The current drop",
+        title: "The first pieces",
+        dataSource: "featured",
+        tone: "bone",
+      },
+      {
+        id: "home-story",
+        type: "split",
+        visible: true,
+        eyebrow: "Two lines · One mindset",
+        title: "From gym to street, without changing who you are",
+        body: "Clothing that carries where you come from and moves with where you are going.",
+        image: "/images/brand/scene-lake.jpg",
+        imageAlt: "GAMANA by the river",
+        buttonLabel: "Our story",
+        buttonHref: "/about",
+        tone: "dark",
+      },
+      {
+        id: "home-journal",
+        type: "journal",
+        visible: true,
+        eyebrow: "From the studio",
+        title: "Notes from the road",
+        dataSource: "latest",
+        tone: "bone",
+      },
+      {
+        id: "home-cta",
+        type: "cta",
+        visible: true,
+        eyebrow: "Wear it",
+        title: "Your roots. Your route. Your rules.",
+        buttonLabel: "Shop the drop",
+        buttonHref: "/shop",
+        tone: "ember",
+      },
+    ],
+  },
+  {
+    slug: "about",
+    title: "About",
+    description: "GAMANA brings culture, fashion and performance together.",
+    active: true,
+    sections: [
+      {
+        id: "about-hero",
+        type: "hero",
+        visible: true,
+        eyebrow: "About GAMANA",
+        title: "Where culture meets everyday style and performance",
+        body: "GAMANA brings culture, fashion, and performance together through apparel that reflects where we come from and moves with where we’re going.",
+        tone: "dark",
+      },
+      {
+        id: "mission",
+        type: "text",
+        visible: true,
+        eyebrow: "Mission",
+        title: "Rooted in origin, made to move",
+        body: "We create clothing that connects people to their roots while expressing who they are.",
+      },
+      {
+        id: "campaign",
+        type: "split",
+        visible: true,
+        eyebrow: "Positioning",
+        title: "Culture, fashion, and performance together",
+        body: "For style-conscious people who want clothing to reflect how they live and move. URBAN streetwear and CORE activewear lines, under one roof.",
+        image: "/images/brand/campaign-duo.jpg",
+        imageAlt: "GAMANA Drop 01 campaign",
+      },
+      {
+        id: "brand-art",
+        type: "gallery",
+        visible: true,
+        eyebrow: "Brand identity",
+        title: "Drawn by hand",
+        items: brandArt.map((a) => ({
+          image: a.image,
+          title: a.title,
+          body: a.note,
+        })),
+      },
+      {
+        id: "about-cta",
+        type: "cta",
+        visible: true,
+        eyebrow: "Wear it",
+        title: "Your roots. Your route. Your rules.",
+        buttonLabel: "Shop GAMANA",
+        buttonHref: "/shop",
+        tone: "ember",
+      },
+    ],
+  },
+  {
+    slug: "lookbook",
+    title: "Lookbook",
+    description: "GAMANA in motion — the Drop 01 lookbook.",
+    active: true,
+    sections: [
+      {
+        id: "lookbook-hero",
+        type: "hero",
+        visible: true,
+        eyebrow: "Drop 01",
+        title: "In the world",
+        body: "The pieces, the people, the places that made the first drop.",
+        image: "/images/brand/scene-lake.jpg",
+        tone: "dark",
+      },
+      {
+        id: "lookbook-grid",
+        type: "gallery",
+        visible: true,
+        eyebrow: "The lookbook",
+        title: "GAMANA in motion",
+        items: lookbook.map((f) => ({
+          image: f.image,
+          title: f.caption,
+          body: f.place,
+          label: f.line,
+        })),
+      },
+    ],
+  },
+  {
+    slug: "shop",
+    title: "Shop",
+    description: "Shop GAMANA clothing.",
+    active: true,
+    sections: [
+      {
+        id: "shop-hero",
+        type: "hero",
+        visible: true,
+        eyebrow: "The current drop",
+        title: "The shop",
+        body: "Every piece is made to order and printed in India, then shipped to you. No warehouse, no leftovers, no compromise on the print.",
+      },
+    ],
+  },
+  {
+    slug: "journal",
+    title: "Journal",
+    description: "Notes from the GAMANA studio.",
+    active: true,
+    sections: [
+      {
+        id: "journal-hero",
+        type: "hero",
+        visible: true,
+        eyebrow: "Journal",
+        title: "Notes from the road",
+        body: "Process, product decisions and the ideas behind the brand.",
+      },
+      {
+        id: "journal-grid",
+        type: "journal",
+        visible: true,
+        eyebrow: "From the studio",
+        title: "Read the journal",
+        dataSource: "latest",
+      },
+    ],
+  },
+  {
+    slug: "contact",
+    title: "Contact",
+    description: "Contact the GAMANA team.",
+    active: true,
+    sections: [
+      {
+        id: "contact-intro",
+        type: "hero",
+        visible: true,
+        eyebrow: "We’re listening",
+        title: "Get in touch",
+        body: "Questions about a product, an order or the brand? Send us a note.",
+      },
+    ],
+  },
+  {
+    slug: "track",
+    title: "Track order",
+    description: "Track a GAMANA order.",
+    active: true,
+    sections: [
+      {
+        id: "track-intro",
+        type: "hero",
+        visible: true,
+        eyebrow: "Order updates",
+        title: "Track your order",
+        body: "Enter your order number and email to see the latest fulfilment details.",
+      },
+    ],
+  },
+  {
+    slug: "checkout",
+    title: "Checkout",
+    description: "Complete your order.",
+    active: true,
+    sections: [
+      {
+        id: "checkout-intro",
+        type: "hero",
+        visible: true,
+        eyebrow: "Almost yours",
+        title: "Your order",
+        body: "Review your bag and enter delivery details to complete your order.",
+      },
+    ],
+  },
+];
+
+export const legacyJournalPosts = journal.map((post, position) => ({
+  slug: post.slug,
+  title: post.title,
+  excerpt: post.excerpt,
+  category: post.category,
+  read_time: post.readTime,
+  published_at: post.date,
+  image: post.image,
+  body: journalBodies[post.slug] ?? [],
+  active: true,
+  position,
+}));
+
+export const legacySiteSettings = {
+  logoUrl: "/images/brand/logo-wordmark.png",
+  brandName: "GAMANA",
+  footerBlurb: "Rooted in origin, made to move.",
+  instagram: "https://instagram.com/gamana.wear",
+  navItems: [
+    { label: "Shop", href: "/shop" },
+    { label: "Lookbook", href: "/lookbook" },
+    { label: "About", href: "/about" },
+    { label: "Journal", href: "/journal" },
+    { label: "Contact", href: "/contact" },
+  ],
+};
+
+// The starter ids (gm-001, etc.) are not database UUIDs. Never send them to an update.
+export const legacyProducts = products.map(({ id: _id, ...product }) => ({
+  ...product,
+  active: true,
+  printTypeId: product.variants[0]?.printTypeId ?? 1,
+}));

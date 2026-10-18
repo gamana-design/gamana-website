@@ -1,2 +1,0 @@
-import {NextResponse} from "next/server";import {requireAdmin} from "@/lib/admin-session";import {saveJournalPost} from "@/lib/site-content";export const dynamic="force-dynamic";
-export async function POST(req:Request){const denied=await requireAdmin();if(denied)return denied;try{return NextResponse.json(await saveJournalPost(await req.json()),{status:201})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Could not save article."},{status:400})}}

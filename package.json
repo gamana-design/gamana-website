@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "import:sql": "tsx scripts/generate-site-import.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -32,6 +34,7 @@
     "eslint-config-next": "15.5.28",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.15",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.2"
   }
 }
