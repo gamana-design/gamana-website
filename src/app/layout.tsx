@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { CartDrawer } from "@/components/cart-drawer";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteChrome } from "@/components/site-chrome";
 import { CartProvider } from "@/lib/cart";
 import { brand, boilerplate } from "@/lib/brand";
 import { absoluteUrl } from "@/lib/utils";
@@ -33,20 +32,12 @@ export const metadata: Metadata = {
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.description,
     url: absoluteUrl("/"),
-    images: [
-      {
-        url: "/images/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: `${brand.name} — ${brand.drop}`,
-      },
-    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.description,
-    images: ["/images/og.jpg"],
+    images: [absoluteUrl("/")],
   },
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
@@ -87,9 +78,7 @@ export default function RootLayout({
         />
         <CartProvider>
           <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
+            <SiteChrome>{children}</SiteChrome>
           </div>
           <CartDrawer />
         </CartProvider>

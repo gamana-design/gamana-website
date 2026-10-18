@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";import {requireAdmin} from "@/lib/admin-session";import {getSupabaseAdmin} from "@/lib/supabase";
+export const dynamic="force-dynamic";
+export async function GET(){const denied=await requireAdmin();if(denied)return denied;const db=getSupabaseAdmin();if(!db)return NextResponse.json({error:"Supabase is not configured."},{status:503});const {data,error}=await db.from("orders").select("*, order_items(*)").order("created_at",{ascending:false}).limit(100);if(error)return NextResponse.json({error:error.message},{status:500});const {count}=await db.from("orders").select("id",{count:"exact",head:true});return NextResponse.json({orders:data??[],count:count??0,revenue:(data??[]).reduce((s,o)=>s+Number(o.total_order_value||0),0)});}

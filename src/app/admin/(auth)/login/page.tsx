@@ -1,0 +1,3 @@
+import {Suspense} from "react";import {redirect} from "next/navigation";import {isAdminSignedIn} from "@/lib/admin-session";import {LoginForm} from "./login-form";
+export const dynamic="force-dynamic";export const metadata={robots:{index:false}};
+export default async function LoginPage(){if(await isAdminSignedIn())redirect("/admin");return <main className="grid min-h-screen place-items-center bg-kalam px-5 text-bone"><section className="w-full max-w-md rounded-[4px] border border-bone/10 bg-bone/[0.03] p-8"><p className="font-display text-2xl font-bold tracking-[.12em]">GAMANA <span className="text-ember">/ Admin</span></p><p className="mt-2 text-sm text-bone/55">Single-owner back office</p><Suspense><LoginForm/></Suspense></section></main>}

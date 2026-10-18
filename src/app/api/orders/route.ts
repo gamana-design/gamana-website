@@ -1,10 +1,12 @@
+import { getStoreProducts } from "@/lib/homepage-store";
 import { NextResponse } from "next/server";
 
-import { products, resolveSku } from "@/data/catalog";
+import { resolveSku } from "@/data/catalog";
 import { buildOrderNumber, createOrder, isConfigured } from "@/lib/qikink";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 interface IncomingItem {
   productSlug: string;
@@ -80,9 +82,10 @@ export async function POST(request: Request) {
 
   /* — resolve lines against the server catalogue ——————————————— */
 
+  const catalogue = await getStoreProducts();
   const lines = items
     .map((item) => {
-      const product = products.find((p) => p.slug === item.productSlug);
+      const product = catalogue.find((p) => p.slug === item.productSlug);
       if (!product) return null;
       const variant = product.variants.find(
         (v) =>

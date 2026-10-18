@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";import {requireAdmin} from "@/lib/admin-session";import {uploadMedia} from "@/lib/storage";
+export const dynamic="force-dynamic";
+export async function POST(req:Request){const denied=await requireAdmin();if(denied)return denied;try{const form=await req.formData();const file=form.get("file");const folder=String(form.get("folder")||"products");if(!(file instanceof File)||!(["products","designs","mockups"].includes(folder)))return NextResponse.json({error:"Invalid upload."},{status:400});return NextResponse.json(await uploadMedia(file,folder,{label:String(form.get("label")||"")}));}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Upload failed."},{status:400});}}

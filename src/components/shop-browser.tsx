@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import {
   categories,
-  products,
+  type Product,
   type ProductCategory,
   type ProductLine,
 } from "@/data/catalog";
@@ -24,7 +24,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "name", label: "Alphabetical" },
 ];
 
-export function ShopBrowser() {
+export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonText }: { products: Product[]; coreComingSoon?: boolean; coreComingSoonText?: string }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -68,7 +68,7 @@ export function ShopBrowser() {
         );
     }
     return list;
-  }, [line, category, sort]);
+  }, [products, line, category, sort]);
 
   const hasFilters = Boolean(line || category);
 
@@ -235,11 +235,10 @@ export function ShopBrowser() {
         {results.length === 0 ? (
           <div className="py-24 text-center">
             <p className="font-display text-2xl font-semibold tracking-[-0.03em]">
-              Nothing here yet
+              {line === "CORE" && coreComingSoon ? "CORE is coming soon" : "Nothing here yet"}
             </p>
             <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted">
-              That combination is not in the current drop. Try another line or
-              category.
+              {line === "CORE" && coreComingSoon ? (coreComingSoonText || "We’re developing the first CORE performance pieces. Check back for the next drop.") : "That combination is not in the current drop. Try another line or category."}
             </p>
           </div>
         ) : (

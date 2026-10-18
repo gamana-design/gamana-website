@@ -13,40 +13,23 @@ import { cn } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-export function Wordmark({
-  className,
-  tone = "dark",
-}: {
-  className?: string;
-  tone?: "dark" | "light";
-}) {
-  return (
-    <span className={cn("inline-flex flex-col leading-none", className)}>
-      <span
-        className={cn(
-          "font-display text-[1.35rem] font-bold tracking-[-0.055em] md:text-[1.6rem]",
-          tone === "light" ? "text-bone" : "text-kalam",
-        )}
-      >
-        {brand.name}
-      </span>
-      <span
-        className={cn(
-          "font-telugu text-[0.5rem] font-medium tracking-[0.35em] md:text-[0.55rem]",
-          tone === "light" ? "text-bone/45" : "text-muted",
-        )}
-      >
-        {brand.nameTelugu}
-      </span>
-    </span>
-  );
+export function Wordmark({ className, tone = "dark", logoUrl, brandName }: { className?: string; tone?: "dark" | "light"; logoUrl?: string; brandName?: string }) {
+  if (logoUrl) return <span className={cn("inline-flex items-center", className)}><img src={logoUrl} alt={brandName ?? brand.name} className="max-h-10 max-w-40 object-contain"/></span>;
+  return <span className={cn("inline-flex flex-col leading-none", className)}><span className={cn("font-display text-[1.35rem] font-bold tracking-[-0.055em] md:text-[1.6rem]",tone === "light" ? "text-bone" : "text-kalam")}>{brandName || brand.name}</span><span className={cn("font-telugu text-[0.5rem] font-medium tracking-[0.35em] md:text-[0.55rem]",tone === "light" ? "text-bone/45" : "text-muted")}>{brand.nameTelugu}</span></span>;
 }
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [announcementItems, setAnnouncementItems] = useState(["Free shipping across India over ₹1,499", "Two lines. One mindset.", "Printed on demand — dispatched in 3 days", "From gym to street, without changing who you are"]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<Record<string, any>>({});
+  const navItems = Array.isArray(siteSettings.navItems) ? siteSettings.navItems : nav;
   const { count, open } = useCart();
   const pathname = usePathname();
+
+  useEffect(() => {
+    fetch("/api/site-settings").then(r => r.ok ? r.json() : null).then(data => { if (!data) return; setSiteSettings(data); if (Array.isArray(data.announcementItems) && data.announcementItems.length) setAnnouncementItems(data.announcementItems); }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -75,12 +58,7 @@ export function SiteHeader() {
         <Marquee
           slow
           className="py-2.5"
-          items={[
-            "Free shipping across India over ₹1,499",
-            "Two lines. One mindset.",
-            "Printed on demand — dispatched in 3 days",
-            "From gym to street, without changing who you are",
-          ]}
+          items={announcementItems}
         />
       </div>
 
@@ -88,17 +66,17 @@ export function SiteHeader() {
         className={cn(
           "sticky top-0 z-50 transition-all duration-500",
           overHero
-            ? "bg-transparent text-bone"
+            ? "bg-kalam text-bone"
             : "border-b border-line bg-bone/85 text-graphite backdrop-blur-xl",
         )}
       >
         <div className="container-gamana flex h-[68px] items-center justify-between gap-6 md:h-[76px]">
           <Link href="/" aria-label="GAMANA home" className="shrink-0">
-            <Wordmark tone={overHero ? "light" : "dark"} />
+            <Wordmark tone={overHero ? "light" : "dark"} logoUrl={siteSettings.logoUrl} brandName={siteSettings.brandName} />
           </Link>
 
           <nav className="hidden items-center gap-8 lg:flex">
-            {nav.map((item) => {
+            {navItems.map((item: {label:string;href:string}) => {
               const active =
                 pathname === item.href ||
                 pathname.startsWith(item.href.split("?")[0]);
@@ -187,7 +165,7 @@ export function SiteHeader() {
             className="fixed inset-0 z-[100] bg-kalam text-bone lg:hidden"
           >
             <div className="container-gamana flex h-[68px] items-center justify-between">
-              <Wordmark tone="light" />
+              <Wordmark tone="light" logoUrl={siteSettings.logoUrl} brandName={siteSettings.brandName} />
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -198,7 +176,7 @@ export function SiteHeader() {
               </button>
             </div>
             <nav className="container-gamana mt-6 flex flex-col">
-              {[...nav, { label: "Track order", href: "/track" }].map(
+              {[...navItems, { label: "Track order", href: "/track" }].map(
                 (item, i) => (
                   <motion.div
                     key={item.label}
@@ -224,7 +202,7 @@ export function SiteHeader() {
             <div className="container-gamana mt-10">
               <p className="label text-bone/40">Follow</p>
               <a
-                href={brand.instagram}
+                href={siteSettings.instagram || brand.instagram}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="link-underline mt-3 inline-block text-bone/80"
