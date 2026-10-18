@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Marquee } from "@/components/marquee";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { Reveal, RevealText } from "@/components/reveal";
-import { brand, values, voice } from "@/lib/brand";
+import { brand, colors, values, voice } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "About",
@@ -28,7 +28,7 @@ const timeline = [
   {
     year: "2026",
     title: "Drop 01 — the Godavari study",
-    body: "The first graphic is researched from the river itself. Sandbank texture, dusk light, and a print that means something to the people who live there.",
+    body: "The first graphic is researched from the river itself. Sandbank texture, dusk light, and a print that means something to the people who live there. It ships in three colourways: Sunset Ember, Lavender Dusk and Violet Hour.",
   },
   {
     year: "Next",
@@ -115,8 +115,8 @@ export default function AboutPage() {
               <div className="relative aspect-[4/5] overflow-hidden rounded-[3px] bg-bone-deep">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/atelier.jpg"
-                  alt="The GAMANA workbench"
+                  src="/images/brand/campaign-duo.jpg"
+                  alt="GAMANA Drop 01 campaign — Sunset Ember and Lavender Dusk"
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -162,6 +162,83 @@ export default function AboutPage() {
                   </dd>
                 </div>
               </dl>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Brand identity */}
+      <section className="border-y border-line bg-bone-deep/40 py-20 md:py-28">
+        <div className="container-gamana">
+          <Reveal>
+            <p className="label text-muted">Brand identity</p>
+            <h2 className="mt-4 max-w-3xl font-display text-[clamp(2rem,5.2vw,3.8rem)] font-semibold leading-[0.96] tracking-[-0.045em]">
+              A wordmark you can hear in a room.
+            </h2>
+          </Reveal>
+
+          <div className="mt-12 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+            <Reveal>
+              <div className="rounded-[3px] bg-bone p-8 md:p-12">
+                <div className="mx-auto max-w-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/brand/logo-wordmark.png"
+                    alt="GAMANA — the brush-lettered wordmark"
+                    className="w-full"
+                  />
+                </div>
+                <p className="mt-9 text-center font-telugu text-[0.95rem] tracking-[0.35em] text-muted">
+                  {brand.nameTelugu}
+                </p>
+                <p className="mt-6 text-center label text-muted">
+                  {brand.category}
+                </p>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.08}>
+              <p className="text-pretty text-[0.98rem] leading-relaxed text-muted">
+                The wordmark is brush-lettered, not typeset — magenta, teal,
+                violet and gold, brushed across a warm paper cream. The running
+                figure above it is the same hand, reduced to a mark.
+              </p>
+              <p className="mt-4 text-pretty text-[0.98rem] leading-relaxed text-muted">
+                The palette comes from the clothes themselves. Ember is the
+                sunset on the Godavari Tee, lavender is the same river a
+                different hour later, and the rest of the spectrum is what
+                happens when you push those two colours a little further.
+              </p>
+
+              <ul className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-line bg-line sm:grid-cols-3">
+                {[
+                  { name: "Kalam Ink", hex: colors.kalam },
+                  { name: "Godavari Ember", hex: colors.ember },
+                  { name: "Sunset Gold", hex: colors.sunset },
+                  { name: "Lavender Dusk", hex: colors.lavender },
+                  { name: "Violet", hex: colors.violet },
+                  { name: "Magenta", hex: colors.magenta },
+                  { name: "Teal", hex: colors.teal },
+                  { name: "Neelam", hex: colors.neelam },
+                  { name: "Bone", hex: colors.bone },
+                ].map((swatch) => (
+                  <li key={swatch.name} className="bg-bone">
+                    <div
+                      className="h-14 w-full"
+                      style={{ backgroundColor: swatch.hex }}
+                      aria-hidden="true"
+                    />
+                    <div className="px-3 py-3">
+                      <p className="text-[0.76rem] font-medium leading-tight">
+                        {swatch.name}
+                      </p>
+                      <p className="mt-0.5 text-[0.68rem] uppercase tracking-[0.12em] text-muted">
+                        {swatch.hex}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </Reveal>
           </div>
         </div>
@@ -264,6 +341,8 @@ export default function AboutPage() {
                   { k: "Base", v: "Hyderabad, India" },
                   { k: "Markets", v: "India, USA" },
                   { k: "Lines", v: "URBAN × CORE" },
+                  { k: "Drop 01", v: "The Godavari Tee" },
+                  { k: "Colourways", v: "Sunset · Lavender · Violet" },
                 ].map((stat) => (
                   <div key={stat.k} className="bg-bone p-7">
                     <p className="label text-muted">{stat.k}</p>

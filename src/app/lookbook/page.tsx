@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import { Reveal } from "@/components/reveal";
-import { lookbook } from "@/data/editorial";
+import { lookbook, brandArt } from "@/data/editorial";
 import { brand } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function LookbookPage() {
     <>
       <section className="bg-kalam pb-16 pt-16 text-bone md:pb-20 md:pt-24">
         <div className="container-gamana">
-          <p className="label text-bone/50">Lookbook · Drop 01</p>
+          <p className="label text-bone/50">Lookbook · Drop 01 — The Godavari Tee</p>
           <h1 className="mt-6 max-w-4xl font-display text-[clamp(2.4rem,7.2vw,6rem)] font-bold uppercase leading-[0.88] tracking-[-0.055em]">
             <span className="block overflow-hidden">
               <span className="block animate-rise [animation-delay:100ms]">
@@ -110,6 +110,48 @@ export default function LookbookPage() {
           </div>
         </section>
       ))}
+
+      <section className="border-t border-line bg-bone py-16 md:py-24">
+        <div className="container-gamana">
+          <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="label text-ember">Prints &amp; posters</p>
+              <h2 className="mt-3 font-display text-[clamp(2.2rem,6vw,4rem)] font-bold uppercase leading-[0.9] tracking-[-0.05em]">
+                The identity
+              </h2>
+            </div>
+            <p className="max-w-sm text-pretty text-[0.92rem] leading-relaxed text-muted">
+              The GAMANA wordmark is brush-lettered — magenta, teal, violet and
+              gold over a warm paper cream. It is the same hand that drew the
+              Godavari graphic.
+            </p>
+          </Reveal>
+
+          <div className="mt-10 grid grid-cols-2 gap-4 md:mt-14 md:grid-cols-3 md:gap-6">
+            {brandArt.map((art, i) => (
+              <Reveal key={art.id} delay={i * 0.05}>
+                <figure className="group relative h-full overflow-hidden rounded-[3px] bg-bone-deep">
+                  <div className="aspect-[4/5] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={art.image}
+                      alt={art.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                    />
+                  </div>
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-kalam/85 to-transparent p-5 text-bone">
+                    <p className="label text-ember">{art.title}</p>
+                    <p className="mt-1.5 text-[0.8rem] leading-snug text-bone/70">
+                      {art.note}
+                    </p>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="bg-ember py-16 text-white md:py-24">
         <div className="container-gamana text-center">

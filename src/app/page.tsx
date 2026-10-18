@@ -6,7 +6,7 @@ import { NewsletterForm } from "@/components/newsletter-form";
 import { ProductCard } from "@/components/product-card";
 import { Reveal, RevealText } from "@/components/reveal";
 import { getFeatured, getByLine } from "@/data/catalog";
-import { journal, lookbook } from "@/data/editorial";
+import { journal, lookbook, brandArt } from "@/data/editorial";
 import { brand, lines, values, voice } from "@/lib/brand";
 
 export default function HomePage() {
@@ -21,11 +21,11 @@ export default function HomePage() {
         <div className="absolute inset-0" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/hero.jpg"
+            src="/images/brand/street-sunset.jpg"
             alt=""
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-kalam/80 via-kalam/40 to-kalam" />
+          <div className="absolute inset-0 bg-gradient-to-b from-kalam/85 via-kalam/45 to-kalam" />
         </div>
         <div className="container-gamana relative flex min-h-[calc(100svh-100px)] flex-col justify-end pb-14 pt-36 text-bone md:pb-20">
           <div className="flex items-center gap-3">
@@ -47,10 +47,13 @@ export default function HomePage() {
             </span>
           </h1>
           <div className="mt-10 flex flex-col gap-8 border-t border-bone/15 pt-8 md:flex-row md:items-end md:justify-between">
-            <p className="max-w-md animate-rise text-pretty text-[0.98rem] leading-relaxed text-bone/70 [animation-delay:420ms]">
-              {brand.description} Two lines — URBAN and CORE — built around where
-              you came from and where you are going.
-            </p>
+            <div className="animate-rise [animation-delay:420ms]">
+              <p className="label text-ember">{brand.drop}</p>
+              <p className="mt-3 max-w-md text-pretty text-[0.98rem] leading-relaxed text-bone/70">
+                {brand.description} Two lines — URBAN and CORE — built around
+                where you came from and where you are going.
+              </p>
+            </div>
             <div className="flex animate-rise flex-wrap items-center gap-3 [animation-delay:520ms]">
               <Link
                 href="/shop"
@@ -102,7 +105,9 @@ export default function HomePage() {
             {lines.map((line, i) => {
               const items = line.key === "URBAN" ? urban : core;
               const image =
-                line.key === "URBAN" ? "/images/urban-1.jpg" : "/images/core-1.jpg";
+                line.key === "URBAN"
+                  ? "/images/brand/scene-doorway-duo.jpg"
+                  : "/images/core-1.jpg";
               const accent =
                 line.key === "URBAN" ? "text-ember" : "text-neelam";
               return (
@@ -192,6 +197,49 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Brand art ───────────────────────────────────────────────── */}
+      <section className="bg-kalam py-20 text-bone md:py-28">
+        <div className="container-gamana">
+          <Reveal className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="label text-bone/45">The identity</p>
+              <h2 className="mt-4 max-w-2xl font-display text-[clamp(2.1rem,5.4vw,4.2rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
+                Drawn by hand, printed on paper.
+              </h2>
+            </div>
+            <p className="max-w-sm text-pretty text-[0.95rem] leading-relaxed text-bone/60">
+              The GAMANA wordmark is brush-lettered, not typeset — magenta, teal,
+              violet and gold over a warm paper cream. It sits on every tee we
+              print and every poster we put up.
+            </p>
+          </Reveal>
+
+          <div className="mt-12 grid grid-cols-2 gap-4 md:mt-16 md:grid-cols-3 md:gap-6">
+            {brandArt.map((art, i) => (
+              <Reveal key={art.id} delay={i * 0.05}>
+                <figure className="group relative h-full overflow-hidden rounded-[3px] bg-kalam-soft">
+                  <div className="aspect-[4/5] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={art.image}
+                      alt={art.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                    />
+                  </div>
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-kalam/90 to-transparent p-5">
+                    <p className="label text-ember">{art.title}</p>
+                    <p className="mt-1.5 text-[0.82rem] leading-snug text-bone/70">
+                      {art.note}
+                    </p>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Manifesto ────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-kalam py-24 text-bone md:py-36">
         <span
@@ -265,7 +313,7 @@ export default function HomePage() {
             <div className="relative aspect-[5/4] overflow-hidden lg:aspect-auto lg:h-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/origin.jpg"
+                src="/images/brand/scene-lake.jpg"
                 alt="The Godavari river at dusk"
                 loading="lazy"
                 className="h-full w-full object-cover"

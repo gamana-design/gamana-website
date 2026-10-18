@@ -11,15 +11,21 @@
   --color-kalam: #0b0b10;
   --color-kalam-soft: #121219;
   --color-kalam-lift: #1b1b24;
-  --color-ember: #ff5a1f;
-  --color-ember-deep: #d8430f;
+  --color-ember: #f2691e;
+  --color-ember-deep: #c94a10;
+  --color-sunset: #fdad42;
   --color-neelam: #2f3ae0;
   --color-neelam-deep: #1f28a6;
-  --color-bone: #f4f1e9;
-  --color-bone-deep: #e9e5d9;
+  --color-lavender: #d0a3c1;
+  --color-lavender-deep: #936486;
+  --color-violet: #541097;
+  --color-magenta: #f6026a;
+  --color-teal: #02b3b3;
+  --color-bone: #f5edda;
+  --color-bone-deep: #e9dfc4;
   --color-graphite: #16161c;
   --color-muted: #6a6a76;
-  --color-line: #e2ded2;
+  --color-line: #e0d5bb;
   --color-line-dark: #26262f;
   --color-success: #1f8a5b;
   --color-warning: #c98a16;
@@ -61,6 +67,15 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes float {
   0%,
   100% {
@@ -73,13 +88,13 @@
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgb(255 90 31 / 0.45);
+    box-shadow: 0 0 0 0 rgb(242 105 30 / 0.45);
   }
   70% {
-    box-shadow: 0 0 0 16px rgb(255 90 31 / 0);
+    box-shadow: 0 0 0 16px rgb(242 105 30 / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(255 90 31 / 0);
+    box-shadow: 0 0 0 0 rgb(242 105 30 / 0);
   }
 }
 

@@ -26,7 +26,7 @@ export const journalBodies: Record<string, JournalBlock[]> = {
     },
     {
       type: "p",
-      text: "So the artwork on the Godavari Oversized Tee is not a literal picture of the river. It is the thing we noticed while standing there — the band, the horizon, the way the light breaks. Rendered as a graphic that you could wear without explaining it, and that would still mean something to the people who know what it came from.",
+      text: "So the artwork on the Godavari Tee is not a literal picture of the river. It is the thing we noticed while standing there — the band, the horizon, the way the light breaks. Rendered as a graphic that you could wear without explaining it, and that would still mean something to the people who know what it came from. It ships in three colourways — Sunset Ember, Lavender Dusk and Violet Hour — because the river is never the same hour twice.",
     },
     { type: "h", text: "What we learned" },
     {
@@ -111,7 +111,11 @@ export const journalBodies: Record<string, JournalBlock[]> = {
     { type: "h", text: "The visual system" },
     {
       type: "p",
-      text: "Kalam Ink for the ground, Godavari Ember for the one loud note, Neelam reserved for the CORE line, and Bone for everything that needs room to breathe. Type is Space Grotesk, tight and upright, because the brand should look like it is moving even when it is standing still.",
+      text: "The palette is not a mood board — it is the clothes. Kalam Ink for the ground, Godavari Ember for the one loud note, Lavender Dusk and Violet Hour for the same river a different hour later, and a warm paper Bone underneath everything. The wordmark itself is brush-lettered in magenta, teal, violet and gold, because a brand that moves should not look like it was set in a spreadsheet.",
+    },
+    {
+      type: "p",
+      text: "Type is Space Grotesk, tight and upright, because the brand should look like it is moving even when it is standing still. And the line under the wordmark is the one we keep coming back to: rooted in origin, made to move.",
     },
   ],
 };

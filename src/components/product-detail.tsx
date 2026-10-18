@@ -14,6 +14,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState("");
+  const [frame, setFrame] = useState(0);
 
   const activeVariant =
     product.variants.find((v) => v.size === size) ?? product.variants[0];
@@ -42,9 +43,10 @@ export function ProductDetail({ product }: { product: Product }) {
         <div className="relative aspect-[4/5] overflow-hidden rounded-[3px] bg-bone-deep">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={product.gallery[0]}
-            alt={product.name}
-            className="h-full w-full object-cover"
+            key={product.gallery[frame]}
+            src={product.gallery[frame]}
+            alt={`${product.name} — view ${frame + 1}`}
+            className="h-full w-full animate-[fade-in_.5s_ease-out] object-cover"
           />
           <div className="absolute left-4 top-4 flex flex-col items-start gap-2">
             <span
@@ -61,13 +63,27 @@ export function ProductDetail({ product }: { product: Product }) {
               </span>
             )}
           </div>
+          {product.gallery.length > 1 && (
+            <span className="label absolute bottom-4 right-4 rounded-full bg-kalam/70 px-3 py-2 text-bone backdrop-blur-sm">
+              {frame + 1} / {product.gallery.length}
+            </span>
+          )}
         </div>
         {product.gallery.length > 1 && (
           <div className="mt-4 grid grid-cols-4 gap-3">
             {product.gallery.map((image, i) => (
-              <div
+              <button
                 key={image + i}
-                className="aspect-[4/5] overflow-hidden rounded-[2px] bg-bone-deep"
+                type="button"
+                onClick={() => setFrame(i)}
+                aria-label={`Show view ${i + 1}`}
+                aria-current={i === frame}
+                className={cn(
+                  "aspect-[4/5] overflow-hidden rounded-[2px] bg-bone-deep transition-all",
+                  i === frame
+                    ? "ring-2 ring-kalam ring-offset-2 ring-offset-bone"
+                    : "opacity-70 hover:opacity-100",
+                )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -76,7 +92,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   loading="lazy"
                   className="h-full w-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}

@@ -1,10 +1,14 @@
 /**
  * GAMANA — brand system.
  *
- * Single source of truth for colour, type and voice. The identity document
- * (`Brand-Document v1.0`) left the visual-identity section unsigned, so the
- * values below are the shipped decisions. Swap them here and the whole site
- * follows.
+ * Single source of truth for colour, type and voice.
+ *
+ * The identity document left the visual-identity section unsigned, so the
+ * values below are the shipped decisions — and they are now read directly off
+ * the brand's own artwork in Drive: the Godavari tees (sunset ember, lavender
+ * dusk, violet hour), the gradient wordmark (magenta, teal, violet, gold) and
+ * the paper cream the posters are printed on. Swap them here and the whole
+ * site follows.
  */
 
 export const brand = {
@@ -12,34 +16,52 @@ export const brand = {
   nameTelugu: "గమన",
   owner: "Sri Sai Shivani Kaligotla",
   tagline: "What Grounds You. Moves You.",
-  oneLiner: "GAMANA creates casual and performance apparel for movement, style, and everyday life.",
+  campaign: "Rooted in origin, made to move.",
+  oneLiner:
+    "GAMANA creates casual and performance apparel for movement, style, and everyday life.",
   description:
     "GAMANA creates culture-inspired streetwear and performance apparel rooted in identity, designed for everyday movement.",
-  category: "Casual Streetwear & Performance Apparel",
+  category: "Casual & Performance Apparel",
   founded: "2026",
   base: "Hyderabad, India",
   markets: ["India", "USA"],
   instagram: "https://www.instagram.com/gamana.wear?xtok=cGJuejlrM3drd212&utm_source=qr",
   instagramHandle: "@gamana.wear",
   lines: ["URBAN", "CORE"],
+  drop: "Drop 01 — The Godavari Tee",
 } as const;
 
-/** Colour — see PLAN.md §1 for the rationale behind each name. */
+/**
+ * Colour — every value below was sampled from the live brand artwork.
+ * `ember`, `sunset` and `lavender` come off the Godavari tees; `violet`,
+ * `magenta` and `teal` come off the gradient wordmark; `bone` is the paper
+ * the posters are printed on.
+ */
 export const colors = {
   /** Kalam Ink — the everyday of the street. Primary brand colour. */
   kalam: "#0B0B10",
   /** Godavari Ember — the river at dusk. The single loud note. */
-  ember: "#FF5A1F",
+  ember: "#F2691E",
+  /** Sunset Gold — the hour the graphic was drawn in. */
+  sunset: "#FDAD42",
   /** Neelam — sapphire. Reserved for the CORE line. */
   neelam: "#2F3AE0",
+  /** Lavender Dusk — the second Godavari colourway. */
+  lavender: "#D0A3C1",
+  /** Violet Hour — the third Godavari colourway, and the wordmark's deep tone. */
+  violet: "#541097",
+  /** Magenta — the wordmark's loud stroke. */
+  magenta: "#F6026A",
+  /** Teal — the wordmark's cool stroke. */
+  teal: "#02B3B3",
   /** Bone — paper, and the base of the page. */
-  bone: "#F4F1E9",
+  bone: "#F5EDDA",
   /** Graphite — body copy. */
   graphite: "#16161C",
   /** Muted — secondary copy, rules, meta. */
   muted: "#6A6A76",
   /** Line — hairline borders on light ground. */
-  line: "#E2DED2",
+  line: "#E0D5BB",
   /** Line (dark) — hairline borders on ink ground. */
   lineDark: "#26262F",
   success: "#1F8A5B",
@@ -66,6 +88,7 @@ export const voice = {
     "Two lines. One mindset.",
     "Everyday essentials, designed to move with you.",
     "From gym to street, without changing who you are.",
+    "Rooted in origin, made to move.",
   ],
   /** Words the brand owns — used by the marquee and SEO copy. */
   ownWords: [

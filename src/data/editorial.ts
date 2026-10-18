@@ -17,7 +17,7 @@ export const journal: JournalPost[] = [
     readTime: "5 min",
     date: "2026-09-14",
     category: "Process",
-    image: "/images/origin.jpg",
+    image: "/images/brand/scene-lake.jpg",
   },
   {
     slug: "two-lines-one-mindset",
@@ -27,7 +27,7 @@ export const journal: JournalPost[] = [
     readTime: "4 min",
     date: "2026-08-28",
     category: "Brand",
-    image: "/images/core-1.jpg",
+    image: "/images/brand/campaign-duo.jpg",
   },
   {
     slug: "from-gym-to-street",
@@ -37,7 +37,7 @@ export const journal: JournalPost[] = [
     readTime: "6 min",
     date: "2026-08-05",
     category: "Product",
-    image: "/images/urban-1.jpg",
+    image: "/images/core-1.jpg",
   },
   {
     slug: "made-of-home",
@@ -47,7 +47,7 @@ export const journal: JournalPost[] = [
     readTime: "3 min",
     date: "2026-07-19",
     category: "Brand",
-    image: "/images/atelier.jpg",
+    image: "/images/brand/logo-gradient.jpg",
   },
 ];
 
@@ -62,44 +62,122 @@ export interface LookbookFrame {
 export const lookbook: LookbookFrame[] = [
   {
     id: "lb-01",
-    image: "/images/urban-1.jpg",
+    image: "/images/brand/scene-doorway-duo.jpg",
     line: "URBAN",
-    caption: "Bone heavyweight tee, relaxed trouser",
-    place: "Bazaar alley, Hyderabad",
+    caption: "Godavari Tee, Sunset Ember and Lavender Dusk",
+    place: "Old city, Hyderabad",
   },
   {
     id: "lb-02",
-    image: "/images/urban-2.jpg",
+    image: "/images/brand/model-sunset-front.jpg",
     line: "URBAN",
-    caption: "Garment-dyed cotton, raking light",
+    caption: "Godavari Tee, front graphic",
     place: "Studio, Hyderabad",
   },
   {
     id: "lb-03",
-    image: "/images/core-1.jpg",
-    line: "CORE",
-    caption: "Rhythm tee, high-rise training short",
-    place: "Track, golden hour",
+    image: "/images/brand/model-sunset-back.jpg",
+    line: "URBAN",
+    caption: "Godavari Tee, back graphic",
+    place: "Studio, Hyderabad",
   },
   {
     id: "lb-04",
+    image: "/images/brand/model-lavender-front.jpg",
+    line: "URBAN",
+    caption: "Godavari Tee, Lavender Dusk",
+    place: "Studio, Hyderabad",
+  },
+  {
+    id: "lb-05",
+    image: "/images/brand/model-violet.jpg",
+    line: "URBAN",
+    caption: "Godavari Tee, Violet Hour",
+    place: "Studio, Hyderabad",
+  },
+  {
+    id: "lb-06",
+    image: "/images/brand/scene-lake.jpg",
+    line: "URBAN",
+    caption: "The Godavari Tee at the water",
+    place: "Godavari",
+  },
+  {
+    id: "lb-07",
+    image: "/images/brand/street-sunset.jpg",
+    line: "URBAN",
+    caption: "Sunset Ember, in motion",
+    place: "Hyderabad streets",
+  },
+  {
+    id: "lb-08",
+    image: "/images/brand/scene-doorway-lavender.jpg",
+    line: "URBAN",
+    caption: "Lavender Dusk, doorway",
+    place: "Old city, Hyderabad",
+  },
+  {
+    id: "lb-09",
+    image: "/images/core-1.jpg",
+    line: "CORE",
+    caption: "Rhythm Performance Tee, training short",
+    place: "Track, golden hour",
+  },
+  {
+    id: "lb-10",
     image: "/images/core-2.jpg",
     line: "CORE",
     caption: "Flatlock seam, matte technical knit",
     place: "Studio, Hyderabad",
   },
+];
+
+/**
+ * Brand art — the printed pieces, gradient wordmark and campaign frames that
+ * carry the identity on the About and Lookbook pages.
+ */
+export interface BrandArt {
+  id: string;
+  image: string;
+  title: string;
+  note: string;
+}
+
+export const brandArt: BrandArt[] = [
   {
-    id: "lb-05",
-    image: "/images/atelier.jpg",
-    line: "URBAN",
-    caption: "Folded, checked, folded again",
-    place: "The workbench",
+    id: "art-01",
+    image: "/images/brand/art-ga.jpg",
+    title: "GAM",
+    note: "Brush study in magenta, teal, violet and gold.",
   },
   {
-    id: "lb-06",
-    image: "/images/origin.jpg",
-    line: "URBAN",
-    caption: "The river at dusk — the first reference",
-    place: "Godavari",
+    id: "art-02",
+    image: "/images/brand/art-ma.jpg",
+    title: "MA",
+    note: "The wordmark, drawn one letter at a time.",
+  },
+  {
+    id: "art-03",
+    image: "/images/brand/art-na.jpg",
+    title: "NA",
+    note: "Same hand, same brush, same afternoon.",
+  },
+  {
+    id: "art-04",
+    image: "/images/brand/poster-everyday-icon.jpg",
+    title: "Your new everyday icon",
+    note: "Drop 01 campaign — the Godavari Tee.",
+  },
+  {
+    id: "art-05",
+    image: "/images/brand/logo-gradient.jpg",
+    title: "GAMANA",
+    note: "Casual & performance apparel.",
+  },
+  {
+    id: "art-06",
+    image: "/images/brand/poster-wordmark-script.jpg",
+    title: "Two lines, one mindset",
+    note: "Sunset Ember and Lavender Dusk, side by side.",
   },
 ];

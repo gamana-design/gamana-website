@@ -5,6 +5,10 @@
  * the site can be pushed straight to `POST /api/order/create` for printing and
  * shipping.
  *
+ * Drop 01 is the Godavari study: one graphic, three colourways — Sunset
+ * Ember, Lavender Dusk and Violet Hour — cut from the artwork in the studio
+ * and printed on demand.
+ *
  * SKUs follow Qikink's `<code>-<colour>-<size>` convention. If the live
  * Qikink account uses different codes, set `QIKINK_SKU_MAP` to a JSON object of
  * `{ "<product-slug>": "<sku>" }` in the environment — it overrides the
@@ -71,31 +75,35 @@ function variants(
 export const products: Product[] = [
   {
     id: "gm-001",
-    slug: "roots-heavyweight-tee",
-    name: "Roots Heavyweight Tee",
+    slug: "godavari-tee-sunset",
+    name: "Godavari Tee — Sunset Ember",
     line: "URBAN",
     category: "T-Shirts",
-    price: 1299,
-    image: "/images/products/heavyweight-tee-ink.jpg",
+    price: 1499,
+    image: "/images/brand/godavari-sunset-front.jpg",
     gallery: [
-      "/images/products/heavyweight-tee-ink.jpg",
-      "/images/urban-2.jpg",
+      "/images/brand/godavari-sunset-front.jpg",
+      "/images/brand/godavari-sunset-back.jpg",
+      "/images/brand/model-sunset-front.jpg",
+      "/images/brand/model-sunset-back.jpg",
     ],
     blurb:
-      "A 240 GSM staple cut wide and boxy, in a combed cotton that holds its shape wash after wash.",
+      "The first graphic. A river at dusk, printed across the chest of a 240 GSM boxy tee.",
     description:
-      "The piece GAMANA is built on. A 240 GSM combed-cotton tee with a dropped shoulder, a ribbed collar that stays flat, and a boxy body that sits right whether you are on the move or standing still. Screen-printed in Hyderabad, finished and dispatched through our print-on-demand partner.",
+      "The piece GAMANA is built on. The Godavari graphic was drawn from the river itself — the way the light sits on the water at dusk, the birds pulling away from the bank, the runner glyph set small at the chest. Front and back are printed, so it reads from both sides. Cut from 240 GSM combed cotton, boxy with a dropped shoulder, printed with a water-based DTG process that stays soft against the skin.",
     details: [
       "240 GSM combed ring-spun cotton",
       "Boxy fit with dropped shoulders",
-      "Ribbed collar, twin-needle hems",
+      "Full front and back print",
+      "Water-based DTG, soft to the touch",
       "Garment-washed for softness",
-      "Machine wash cold, tumble dry low",
+      "Machine wash inside out, cold",
     ],
-    tags: ["heavyweight", "cotton", "oversized", "everyday"],
-    badge: "Core piece",
+    tags: ["graphic", "cultural", "godavari", "heavyweight", "drop-01"],
+    badge: "Drop 01",
     featured: true,
-    variants: variants("roots-heavyweight-tee", "UHTee", "Bk", "Onyx Black", 1, [
+    isNew: true,
+    variants: variants("godavari-tee-sunset", "GDTee", "Or", "Sunset Ember", 1, [
       "S",
       "M",
       "L",
@@ -105,32 +113,35 @@ export const products: Product[] = [
   },
   {
     id: "gm-002",
-    slug: "godavari-oversized-tee",
-    name: "Godavari Oversized Tee",
+    slug: "godavari-tee-lavender",
+    name: "Godavari Tee — Lavender Dusk",
     line: "URBAN",
     category: "T-Shirts",
     price: 1499,
-    image: "/images/products/heavyweight-tee-bone.jpg",
+    image: "/images/brand/godavari-lavender-front.jpg",
     gallery: [
-      "/images/products/heavyweight-tee-bone.jpg",
-      "/images/urban-1.jpg",
+      "/images/brand/godavari-lavender-front.jpg",
+      "/images/brand/godavari-lavender-back.jpg",
+      "/images/brand/model-lavender-front.jpg",
+      "/images/brand/model-lavender-back.jpg",
     ],
     blurb:
-      "A cultural graphic tee built from our Godavari research — the river, the texture, the light.",
+      "The same river, a different hour — lavender, violet and the same ghat silhouette on the back.",
     description:
-      "Our first culture-led release. The Godavari-inspired artwork was researched from the river itself — its sandbank texture, the way light sits on the water at dusk — and rebuilt as a hand-drawn graphic rather than borrowed imagery. Printed on bone heavyweight cotton so the artwork reads like ink on paper.",
+      "Lavender Dusk is the Godavari graphic in its quiet register. The sky reads violet and rose, the birds are still there, and the back carries the bridge silhouette in full. Same 240 GSM combed cotton, same boxy body, same drop — a colourway rather than a rerun.",
     details: [
-      "220 GSM combed cotton",
-      "Relaxed oversized fit",
-      "Hand-researched cultural graphic",
-      "Water-based DTG print, soft to the touch",
+      "240 GSM combed ring-spun cotton",
+      "Boxy fit with dropped shoulders",
+      "Full front and back print",
+      "Water-based DTG, soft to the touch",
+      "Garment-washed for softness",
       "Machine wash inside out, cold",
     ],
-    tags: ["graphic", "cultural", "godavari", "oversized"],
+    tags: ["graphic", "cultural", "godavari", "heavyweight", "drop-01"],
     badge: "Drop 01",
     featured: true,
     isNew: true,
-    variants: variants("godavari-oversized-tee", "UOTee", "Wh", "Bone White", 1, [
+    variants: variants("godavari-tee-lavender", "GDTee", "Lv", "Lavender Dusk", 1, [
       "S",
       "M",
       "L",
@@ -140,27 +151,34 @@ export const products: Product[] = [
   },
   {
     id: "gm-003",
-    slug: "route-heavyweight-hoodie",
-    name: "Route Heavyweight Hoodie",
+    slug: "godavari-tee-violet",
+    name: "Godavari Tee — Violet Hour",
     line: "URBAN",
-    category: "Hoodies",
-    price: 2499,
-    image: "/images/products/hoodie.jpg",
-    gallery: ["/images/products/hoodie.jpg", "/images/urban-2.jpg"],
-    blurb:
-      "A 320 GSM fleece hoodie with a double-lined hood — the layer that carries the whole season.",
-    description:
-      "Built for the in-between hours. A 320 GSM brushed fleece, double-lined hood that holds its shape, ribbed cuffs and hem that do not stretch out, and a kangaroo pocket deep enough to be useful. Heavy enough to wear on its own, structured enough to layer.",
-    details: [
-      "320 GSM brushed cotton fleece",
-      "Double-lined hood with flat drawcords",
-      "Ribbed cuffs and hem",
-      "Kangaroo pocket",
-      "Machine wash cold, dry flat",
+    category: "T-Shirts",
+    price: 1499,
+    image: "/images/brand/model-violet.jpg",
+    gallery: [
+      "/images/brand/model-violet.jpg",
+      "/images/brand/detail-violet-collar.jpg",
+      "/images/brand/detail-violet-fabric.jpg",
     ],
-    tags: ["fleece", "hoodie", "winter", "heavyweight"],
+    blurb:
+      "Violet, magenta and the last of the light — the third reading of the same graphic.",
+    description:
+      "Violet Hour pushes the sunset further, into magenta and deep violet, with the bridge graphic running across the back. Cut on the same 240 GSM boxy body, so it sits exactly where the other two do. The colourway people stop you in the street about.",
+    details: [
+      "240 GSM combed ring-spun cotton",
+      "Boxy fit with dropped shoulders",
+      "Full front and back print",
+      "Water-based DTG, soft to the touch",
+      "Ribbed collar that stays flat",
+      "Machine wash inside out, cold",
+    ],
+    tags: ["graphic", "cultural", "godavari", "heavyweight", "drop-01"],
+    badge: "Drop 01",
     featured: true,
-    variants: variants("route-heavyweight-hoodie", "UHHd", "Bk", "Onyx Black", 1, [
+    isNew: true,
+    variants: variants("godavari-tee-violet", "GDTee", "Vi", "Violet Hour", 1, [
       "S",
       "M",
       "L",
@@ -170,68 +188,54 @@ export const products: Product[] = [
   },
   {
     id: "gm-004",
-    slug: "daily-cotton-cap",
-    name: "Daily Cotton Cap",
+    slug: "everyday-oversized-tee",
+    name: "Everyday Oversized Tee — Bone",
     line: "URBAN",
-    category: "Accessories",
-    price: 699,
-    image: "/images/products/cap.jpg",
-    gallery: ["/images/products/cap.jpg"],
-    blurb:
-      "An unstructured six-panel in washed cotton twill — the one accessory that goes with everything.",
-    description:
-      "Washed cotton twill, unstructured front, brass adjuster. No logo, no noise. It packs flat, it wears well, and it goes with both lines without thinking about it.",
-    details: [
-      "Washed cotton twill",
-      "Unstructured six-panel crown",
-      "Brass strap adjuster",
-      "Pre-curved brim",
-      "Spot clean",
+    category: "T-Shirts",
+    price: 1199,
+    image: "/images/products/heavyweight-tee-bone.jpg",
+    gallery: [
+      "/images/products/heavyweight-tee-bone.jpg",
+      "/images/urban-1.jpg",
     ],
-    tags: ["accessory", "cap", "cotton"],
-    variants: variants("daily-cotton-cap", "UCap", "Bk", "Onyx Black", 5, ["One Size"]),
-  },
-  {
-    id: "gm-005",
-    slug: "carry-heavy-canvas-tote",
-    name: "Carry Heavy Canvas Tote",
-    line: "URBAN",
-    category: "Accessories",
-    price: 899,
-    image: "/images/products/tote.jpg",
-    gallery: ["/images/products/tote.jpg"],
     blurb:
-      "16 oz natural canvas, bar-tacked handles, deep enough for a laptop and a week of groceries.",
+      "A 220 GSM bone tee cut wide and boxy — the one you reach for without thinking.",
     description:
-      "Cut from 16 oz natural canvas with reinforced bar-tack stitching where the handles meet the body. Wide mouth, flat base, and a pocket that fits a phone without hunting for it.",
+      "The blank canvas of the collection. Heavyweight combed cotton in a warm bone, cut wide through the chest with a dropped shoulder and a hem that sits where it should. No graphic, no noise — it works under everything and over nothing.",
     details: [
-      "16 oz natural cotton canvas",
-      "Bar-tacked handle joins",
-      "Internal slip pocket",
-      "Flat base, 38 × 42 cm",
-      "Spot clean, cold wash",
+      "220 GSM combed ring-spun cotton",
+      "Oversized drop-shoulder fit",
+      "Ribbed collar, twin-needle hems",
+      "Pre-shrunk",
+      "Machine wash cold, tumble dry low",
     ],
-    tags: ["accessory", "tote", "canvas"],
-    variants: variants("carry-heavy-canvas-tote", "UTote", "Be", "Natural Canvas", 5, [
-      "One Size",
+    tags: ["oversized", "cotton", "everyday", "essential"],
+    featured: true,
+    variants: variants("everyday-oversized-tee", "UETee", "Bn", "Bone", 1, [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
     ]),
   },
   {
-    id: "gm-006",
+    id: "gm-005",
     slug: "rhythm-performance-tee",
     name: "Rhythm Performance Tee",
     line: "CORE",
     category: "Performance",
     price: 1399,
-    image: "/images/products/performance-shirt.jpg",
+    image: "/images/products/heavyweight-tee-ink.jpg",
     gallery: [
-      "/images/products/performance-shirt.jpg",
+      "/images/products/heavyweight-tee-ink.jpg",
+      "/images/core-2.jpg",
       "/images/core-1.jpg",
     ],
     blurb:
       "A quick-dry training tee that stays light, dry and clean-looking well past the session.",
     description:
-      "The CORE workhorse. A lightweight quick-dry knit with a matte, low-sheen finish that keeps its shape through heat and sweat. Flatlock seams sit flat under a pack strap, and the hem is long enough to stay put through a stretch.",
+      "The CORE workhorse. A lightweight quick-dry knit with a matte, low-sheen finish that keeps its shape through heat and sweat. Flatlock seams sit flat under a pack strap, and the hem is long enough to stay put through a stretch. Styled, it still reads as a plain layer.",
     details: [
       "Quick-dry recycled poly blend, 140 GSM",
       "Flatlock seams, raglan sleeve",
@@ -243,7 +247,7 @@ export const products: Product[] = [
     badge: "New",
     featured: true,
     isNew: true,
-    variants: variants("rhythm-performance-tee", "CPTee", "Nv", "Deep Navy", 23, [
+    variants: variants("rhythm-performance-tee", "CPTee", "On", "Onyx", 23, [
       "S",
       "M",
       "L",
@@ -251,18 +255,18 @@ export const products: Product[] = [
     ]),
   },
   {
-    id: "gm-007",
-    slug: "move-training-shorts",
-    name: "Move Training Shorts",
+    id: "gm-006",
+    slug: "move-training-short",
+    name: "Move Training Short",
     line: "CORE",
     category: "Performance",
     price: 1199,
-    image: "/images/products/sweatshorts.jpg",
-    gallery: ["/images/products/sweatshorts.jpg", "/images/core-2.jpg"],
+    image: "/images/products/training-short.jpg",
+    gallery: ["/images/products/training-short.jpg", "/images/core-1.jpg", "/images/core-2.jpg"],
     blurb:
       "Ripstop shorts with a zip pocket and a liner that stays where it should.",
     description:
-      "Lightweight ripstop with a bonded waistband that does not roll, a zipped side pocket for the things you do not want on the floor, and a short mesh liner that is optional, not obligatory.",
+      "Lightweight ripstop with a bonded waistband that does not roll, a zipped side pocket for the things you do not want on the floor, and a short mesh liner that is optional, not obligatory. Cut to move through a warm-up and still look like it afterwards.",
     details: [
       "70D ripstop weave with 4-way stretch",
       "Bonded no-roll waistband",
@@ -271,7 +275,7 @@ export const products: Product[] = [
       "Machine wash cold, no iron",
     ],
     tags: ["shorts", "ripstop", "training", "liner"],
-    variants: variants("move-training-shorts", "CPSht", "Ch", "Graphite", 23, [
+    variants: variants("move-training-short", "CPSht", "Gr", "Graphite", 23, [
       "S",
       "M",
       "L",
@@ -279,71 +283,14 @@ export const products: Product[] = [
     ], ["S"]),
   },
   {
-    id: "gm-008",
-    slug: "core-long-sleeve",
-    name: "Core Long Sleeve",
-    line: "CORE",
-    category: "Performance",
-    price: 1899,
-    image: "/images/products/performance-shirt.jpg",
-    gallery: ["/images/core-2.jpg", "/images/products/performance-shirt.jpg"],
-    blurb:
-      "A second-skin long sleeve for cool mornings and late finishes — fitted without being tight.",
-    description:
-      "Cut close without cutting you in. A stretch long sleeve in a smooth performance knit with thumbhole-free cuffs, a flat hem and enough compression to hold a muscle warm through a long session. Styled, it reads as a plain layer.",
-    details: [
-      "Stretch performance knit, 180 GSM",
-      "Slim athletic fit",
-      "Flatlock seams",
-      "UPF 40+ sun protection",
-      "Machine wash cold, hang dry",
-    ],
-    tags: ["long-sleeve", "performance", "layering"],
-    variants: variants("core-long-sleeve", "CPLs", "Ch", "Graphite", 23, [
-      "S",
-      "M",
-      "L",
-      "XL",
-    ]),
-  },
-  {
-    id: "gm-009",
-    slug: "everyday-oversized-tee",
-    name: "Everyday Oversized Tee",
-    line: "URBAN",
-    category: "T-Shirts",
-    price: 1199,
-    image: "/images/products/oversized-tee.jpg",
-    gallery: ["/images/products/oversized-tee.jpg", "/images/urban-1.jpg"],
-    blurb:
-      "A charcoal drop-shoulder tee with a wide body — the one you reach for without thinking.",
-    description:
-      "Wide through the chest, long enough to layer over a tee, and cut in a mid-weight cotton that holds a clean line. The everyday answer to the everyday question.",
-    details: [
-      "200 GSM combed cotton",
-      "Drop-shoulder oversized fit",
-      "Slightly dropped hem",
-      "Twin-needle stitching",
-      "Machine wash cold",
-    ],
-    tags: ["oversized", "cotton", "everyday"],
-    variants: variants("everyday-oversized-tee", "UETee", "Ch", "Graphite", 1, [
-      "S",
-      "M",
-      "L",
-      "XL",
-      "XXL",
-    ]),
-  },
-  {
-    id: "gm-010",
+    id: "gm-007",
     slug: "everyday-performance-hoodie",
     name: "Everyday Performance Hoodie",
     line: "CORE",
     category: "Hoodies",
     price: 2399,
     image: "/images/products/hoodie.jpg",
-    gallery: ["/images/products/hoodie.jpg", "/images/core-1.jpg"],
+    gallery: ["/images/products/hoodie.jpg", "/images/urban-2.jpg"],
     blurb:
       "A training hoodie that moves like a tee and warms like a layer.",
     description:
@@ -355,12 +302,12 @@ export const products: Product[] = [
       "Kangaroo pocket",
       "Machine wash cold, hang dry",
     ],
-    tags: ["hoodie", "performance", "layering"],
+    tags: ["hoodie", "performance", "layering", "fleece"],
     variants: variants(
       "everyday-performance-hoodie",
       "CPHd",
-      "Nv",
-      "Deep Navy",
+      "On",
+      "Onyx",
       23,
       ["S", "M", "L", "XL"],
     ),

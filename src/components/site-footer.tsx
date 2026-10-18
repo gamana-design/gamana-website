@@ -41,9 +41,19 @@ export function SiteFooter() {
         <div className="grid gap-14 lg:grid-cols-[1.15fr_2fr]">
           <div>
             <Wordmark tone="light" />
-            <p className="mt-6 max-w-sm text-pretty text-[0.95rem] leading-relaxed text-bone/55">
+            <p className="mt-4 label text-bone/35">{brand.category}</p>
+            <p className="mt-5 max-w-sm text-pretty text-[0.95rem] leading-relaxed text-bone/55">
               {brand.description}
             </p>
+            <div className="mt-9 max-w-[17rem]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/brand/logo-wordmark.png"
+                alt="GAMANA"
+                loading="lazy"
+                className="w-full"
+              />
+            </div>
             <div className="mt-8 flex flex-wrap gap-2">
               {lines.map((line) => (
                 <Link
