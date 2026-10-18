@@ -5,14 +5,17 @@ import { Marquee } from "@/components/marquee";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { ProductCard } from "@/components/product-card";
 import { Reveal, RevealText } from "@/components/reveal";
-import { getFeatured, getByLine } from "@/data/catalog";
+import { getProducts } from "@/lib/catalog-store";
 import { journal, lookbook, brandArt } from "@/data/editorial";
 import { brand, lines, values, voice } from "@/lib/brand";
 
-export default function HomePage() {
-  const featured = getFeatured(4);
-  const urban = getByLine("URBAN").slice(0, 3);
-  const core = getByLine("CORE").slice(0, 3);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const products = await getProducts();
+  const featured = products.filter((p) => p.featured).slice(0, 4);
+  const urban = products.filter((p) => p.line === "URBAN").slice(0, 3);
+  const core = products.filter((p) => p.line === "CORE").slice(0, 3);
 
   return (
     <>

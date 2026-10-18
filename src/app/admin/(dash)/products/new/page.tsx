@@ -1,0 +1,1 @@
+import {ProductEditor} from "@/components/admin/product-editor";export const dynamic="force-dynamic";export const metadata={robots:{index:false}};export default function NewProduct(){return <><h1 className="mb-6 font-display text-4xl font-bold">New product</h1><ProductEditor/></>}

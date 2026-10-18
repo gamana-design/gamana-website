@@ -5,11 +5,13 @@ import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
-import { getProduct, products } from "@/data/catalog";
+import { getProductBySlug, getProducts } from "@/lib/catalog-store";
 import { brand } from "@/lib/brand";
 
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+export const dynamic = "force-dynamic";
+
+export async function generateStaticParams() {
+  return (await getProducts()).map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({
@@ -18,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
 
   return {
@@ -39,10 +41,10 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = products
+  const related = (await getProducts())
     .filter((p) => p.id !== product.id && p.line === product.line)
     .slice(0, 4);
 

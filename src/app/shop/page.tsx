@@ -3,6 +3,9 @@ import { Suspense } from "react";
 
 import { ShopBrowser } from "@/components/shop-browser";
 import { brand } from "@/lib/brand";
+import { getProducts } from "@/lib/catalog-store";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Shop the drop",
@@ -11,7 +14,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/shop" },
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getProducts();
   return (
     <>
       <section className="border-b border-line bg-bone-deep/40">
@@ -28,7 +32,7 @@ export default function ShopPage() {
       </section>
 
       <Suspense fallback={<div className="container-gamana py-20" />}>
-        <ShopBrowser />
+        <ShopBrowser products={products} />
       </Suspense>
     </>
   );

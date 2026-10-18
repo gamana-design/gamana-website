@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import {
   categories,
-  products,
+  type Product,
   type ProductCategory,
   type ProductLine,
 } from "@/data/catalog";
@@ -24,7 +24,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "name", label: "Alphabetical" },
 ];
 
-export function ShopBrowser() {
+export function ShopBrowser({ products }: { products: Product[] }) {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -68,7 +68,7 @@ export function ShopBrowser() {
         );
     }
     return list;
-  }, [line, category, sort]);
+  }, [products, line, category, sort]);
 
   const hasFilters = Boolean(line || category);
 

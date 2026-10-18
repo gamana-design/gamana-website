@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { CartDrawer } from "@/components/cart-drawer";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SiteChrome } from "@/components/site-chrome";
 import { CartProvider } from "@/lib/cart";
 import { brand, boilerplate } from "@/lib/brand";
 import { absoluteUrl } from "@/lib/utils";
@@ -87,9 +86,7 @@ export default function RootLayout({
         />
         <CartProvider>
           <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
+            <SiteChrome>{children}</SiteChrome>
           </div>
           <CartDrawer />
         </CartProvider>
