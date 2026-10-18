@@ -32,7 +32,7 @@ export const defaultHomepageSettings: HomepageSettings = {
   heroAccent: "Moves",
   heroTail: "you.",
   heroDescription: "GAMANA is a clothing brand rooted in where you come from and built for where you are going.",
-  heroImage: "/images/brand/street-sunset.jpg",
+  heroImage: "",
   primaryCta: "Shop the drop",
   primaryHref: "/shop",
   secondaryCta: "Our story",

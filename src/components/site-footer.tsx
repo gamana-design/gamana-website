@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { Wordmark } from "@/components/site-header";
 import { brand, lines, socials } from "@/lib/brand";
@@ -36,25 +37,21 @@ const columns = [
 ];
 
 export function SiteFooter() {
+  const [settings, setSettings] = useState<Record<string, any>>({});
+  useEffect(() => { fetch("/api/site-settings").then(r => r.ok ? r.json() : null).then(data => { if (data) setSettings(data); }).catch(() => undefined); }, []);
+  const footerLinks = Array.isArray(settings.footerLinks) ? settings.footerLinks : (settings.navItems ?? []).map((x: any) => ({ title: "Explore", label: x.label, href: x.href }));
+  const footerColumns = footerLinks.length ? [{ title: "Explore", links: footerLinks }] : columns;
   return (
     <footer className="relative overflow-hidden bg-kalam text-bone">
       <div className="container-gamana pt-20 md:pt-28">
         <div className="grid gap-14 lg:grid-cols-[1.15fr_2fr]">
           <div>
-            <Wordmark tone="light" />
+            <Wordmark tone="light" logoUrl={settings.logoUrl} brandName={settings.brandName} />
             <p className="mt-4 label text-bone/35">{brand.category}</p>
             <p className="mt-5 max-w-sm text-pretty text-[0.95rem] leading-relaxed text-bone/55">
-              {brand.description}
+              {settings.footerBlurb || brand.description}
             </p>
-            <div className="mt-9 max-w-[17rem]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/brand/logo-wordmark.png"
-                alt="GAMANA"
-                loading="lazy"
-                className="w-full"
-              />
-            </div>
+
             <div className="mt-8 flex flex-wrap gap-2">
               {lines.map((line) => (
                 <Link
@@ -67,7 +64,7 @@ export function SiteFooter() {
               ))}
             </div>
             <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3">
-              {socials.map((s) => (
+              {[{ label: "Instagram", href: settings.instagram || brand.instagram }, ...socials.filter(s => s.label !== "Instagram")].map((s) => (
                 <Link
                   key={s.label}
                   href={s.href}
@@ -83,11 +80,11 @@ export function SiteFooter() {
           </div>
 
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-            {columns.map((col) => (
+            {footerColumns.map((col: any) => (
               <div key={col.title}>
                 <p className="label text-bone/35">{col.title}</p>
                 <ul className="mt-5 space-y-3">
-                  {col.links.map((link) => (
+                  {col.links.map((link: {label:string;href:string}) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
@@ -109,7 +106,7 @@ export function SiteFooter() {
             aria-hidden="true"
             className="font-display text-[18vw] font-bold leading-[0.78] tracking-[-0.06em] text-bone/[0.07]"
           >
-            GAMANA
+            {settings.brandName || brand.name}
           </p>
         </div>
 

@@ -15,3 +15,34 @@ create table if not exists public.gamana_homepage_settings (
   updated_at timestamptz not null default now()
 );
 alter table public.gamana_homepage_settings enable row level security;
+
+-- Editable website sections, journal posts, and global site chrome.
+create table if not exists public.gamana_site_pages (
+  slug text primary key,
+  title text not null,
+  description text not null default '',
+  sections jsonb not null default '[]'::jsonb,
+  active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.gamana_journal_posts (
+  slug text primary key,
+  title text not null,
+  excerpt text not null default '',
+  category text not null default 'Journal',
+  read_time text not null default '3 min',
+  published_at date not null default current_date,
+  image text not null default '',
+  body jsonb not null default '[]'::jsonb,
+  active boolean not null default true,
+  position integer not null default 0,
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.gamana_site_settings (
+  id integer primary key check (id = 1),
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.gamana_site_pages enable row level security;
+alter table public.gamana_journal_posts enable row level security;
+alter table public.gamana_site_settings enable row level security;

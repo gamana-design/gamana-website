@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 
 import { getStoreProducts } from "@/lib/homepage-store";
-import { journal } from "@/data/editorial";
+import { getJournalPosts } from "@/lib/site-content";
 import { absoluteUrl } from "@/lib/utils";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getStoreProducts();
+  const [products, journal] = await Promise.all([getStoreProducts(), getJournalPosts()]);
   const now = new Date();
 
   const staticRoutes = [
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const journalRoutes = journal.map((post) => ({
     url: absoluteUrl(`/journal/${post.slug}`),
-    lastModified: new Date(post.date),
+    lastModified: new Date(post.published_at),
     changeFrequency: "monthly" as const,
     priority: 0.5,
   }));

@@ -1,0 +1,4 @@
+import {NextResponse} from "next/server";import {requireAdmin} from "@/lib/admin-session";import {getSiteSettings,saveSiteSettings} from "@/lib/site-content";import {getHomepageSettings,saveHomepageSettings} from "@/lib/homepage-store";
+export const dynamic="force-dynamic";
+export async function GET(){const denied=await requireAdmin();if(denied)return denied;return NextResponse.json({site:await getSiteSettings(),home:await getHomepageSettings()})}
+export async function PATCH(req:Request){const denied=await requireAdmin();if(denied)return denied;try{const {site,home}=await req.json();const [savedSite,savedHome]=await Promise.all([saveSiteSettings(site),saveHomepageSettings(home)]);return NextResponse.json({site:savedSite,home:savedHome})}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Could not save site settings."},{status:400})}}

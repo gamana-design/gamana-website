@@ -32,20 +32,12 @@ export const metadata: Metadata = {
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.description,
     url: absoluteUrl("/"),
-    images: [
-      {
-        url: "/images/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: `${brand.name} — ${brand.drop}`,
-      },
-    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.description,
-    images: ["/images/og.jpg"],
+    images: [absoluteUrl("/")],
   },
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
