@@ -1,7 +1,7 @@
 # GAMANA — Brand & Design System Spec v1.0
 
 *Companion to the GAMANA Brand Identity Document v1.0.*
-*Site: https://gamana-website.vercel.app · Repo: github.com/gamana-design/gamana-website*
+*Site: https://gamana-wear.vercel.app · Repo: github.com/gamana-design/gamana-website*
 
 ---
 
@@ -155,6 +155,8 @@ own pace · fashion meets function → style and movement, seamlessly combined.
 | Fulfilment | Qikink live API — order create + order list |
 | Data | Supabase — orders, order_items, newsletter_subscribers, contact_messages, product_feedback |
 | Token source | `src/lib/brand.ts` → `src/app/globals.css` `@theme` |
+| Live URL | https://gamana-wear.vercel.app |
+| Health check | `GET /api/status` — reports Qikink + Supabase reachability |
 
 **Site routes:** `/` · `/shop` · `/product/[slug]` · `/lookbook` · `/about` ·
 `/journal` · `/journal/[slug]` · `/contact` · `/track` · `/checkout`

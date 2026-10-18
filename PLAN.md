@@ -89,7 +89,11 @@ Catalogue: the published Qikink API is order-scoped, so the storefront reads a *
 Tables: `newsletter_subscribers`, `contact_messages`, `orders`, `order_items`, `product_feedback`. RLS enabled, service-role writes only from the server.
 
 ### Vercel
-New project `gamana-website` linked to `gamana-design/gamana-website`, env vars injected, production deploy.
+Project `gamana` linked to `gamana-design/gamana-website` (repoId `1424037015`), env vars injected, production deploy.
+**Live at `https://gamana-wear.vercel.app`.** The project is renamed to `gamana` and the production domain is
+`gamana-wear.vercel.app` — a project domain, which is what sits outside Vercel Authentication's protection
+scope. The team-scoped `*-gamana1.vercel.app` aliases are gated behind a Vercel login, so they are not the
+public URL. `GET /api/status` reports whether Qikink and Supabase are answering from the server runtime.
 
 ### Google Drive
 `GAMANA / Brand` is the master location for the brand team:
