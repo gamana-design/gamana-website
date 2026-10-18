@@ -20,8 +20,9 @@ export default async function CheckoutPage() {
   return (
     <>
       {page && <PageRenderer page={page} />}
-      <section className="bg-bone py-12 md:py-20">
+      <section className="checkout-brand bg-bone py-8 md:py-12">
         <div className="container-gamana">
+          <nav aria-label="Checkout steps" className="checkout-stage"><span>01 / Your bag</span><span aria-hidden="true" /><span className="current" aria-current="step">02 / Delivery & payment</span></nav>
           <CheckoutForm
             testMode={process.env.RAZORPAY_MODE !== "live"}
             onlineEnabled={onlineEnabled}

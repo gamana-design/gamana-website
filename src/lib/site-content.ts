@@ -1,4 +1,6 @@
 import "server-only";
+import { brandContent } from "./brand-name";
+import { isDesignPreview } from "./design-preview";
 import { unstable_cache } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
@@ -66,12 +68,14 @@ const cachedPages = unstable_cache(
   { revalidate: 60, tags: ["gamana-site-pages"] },
 );
 export async function getSitePages() {
-  return cachedPages();
+  if (isDesignPreview()) return brandContent((await import("@/data/legacy-site-content")).legacyPages);
+  return brandContent(await cachedPages());
 }
 export async function getSitePage(slug: string) {
   return (await getSitePages()).find((page) => page.slug === slug);
 }
 export async function getJournalPosts() {
+  if (isDesignPreview()) return brandContent((await import("@/data/legacy-site-content")).legacyJournalPosts);
   const db = getSupabaseAdmin();
   if (!db) return [] as JournalPost[];
   const { data, error } = await db
@@ -81,7 +85,7 @@ export async function getJournalPosts() {
     .order("position")
     .order("published_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as JournalPost[];
+  return brandContent((data ?? []) as JournalPost[]);
 }
 export async function getJournalPost(slug: string) {
   return (await getJournalPosts()).find((post) => post.slug === slug);
@@ -102,5 +106,5 @@ const readSiteSettings = unstable_cache(
   { revalidate: 60, tags: ["gamana-site-settings"] },
 );
 export async function getSiteSettings() {
-  return readSiteSettings();
+  return brandContent(await readSiteSettings());
 }

@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["*.e2b.app"],
+  devIndicators: false,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.qikink.com" },

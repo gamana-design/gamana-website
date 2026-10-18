@@ -68,8 +68,8 @@ export function CartDrawer() {
                   Your bag is empty
                 </p>
                 <p className="max-w-[16rem] text-sm leading-relaxed text-muted">
-                  Start with the pieces that carry the brand — the Roots tee and
-                  the Route hoodie.
+                  A little space for your next everyday favourite.
+                  Explore the current collection and find your piece.
                 </p>
                 <Link
                   href="/shop"

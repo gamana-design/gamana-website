@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import type { ReactNode } from "react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -26,14 +26,14 @@ export function Reveal({
   as?: "div" | "section" | "li" | "span" | "p" | "h2" | "h3";
 }) {
   const MotionTag = motion[as];
+  const reduceMotion = useReducedMotion();
   return (
     <MotionTag
       className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-12% 0px -8% 0px" }}
-      variants={revealVariants}
-      transition={{ delay }}
+      initial={{ opacity: 1, y: reduceMotion ? 0 : 18 }}
+      whileInView={{ y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ delay: reduceMotion ? 0 : delay, duration: reduceMotion ? 0 : 0.8, ease: EASE }}
     >
       {children}
     </MotionTag>

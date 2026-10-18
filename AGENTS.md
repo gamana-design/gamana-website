@@ -30,3 +30,17 @@ The owner of this project is **not a developer**. Every instruction and explanat
 For the current payment notification setup, use the plain-language instructions in [Razorpay webhook guide](docs/razorpay-webhook-guide.md).
 
 These preferences apply to future work on this project as well as the current request. They do not authorise additional changes or replace higher-priority safety requirements.
+
+## Storefront design decisions
+
+- Homepage is a drop-specific campaign takeover. Current collection: **Bay Breeze**, inspired by the Godavari, available now, airy and sun-washed. Use real product images; supporting generated scenery must not invent or alter garments.
+- Other public pages follow `docs/GAMANA-Brand-Spec.md`: Bone/Kalam Ink, Ember for URBAN, Neelam for CORE, and the existing brand typography. Campaign-only colours stay scoped to the homepage.
+- Future drops are agent-prepared and scheduled for an owner-confirmed launch time (India time by default). Do not invent dates, countdowns, scarcity, or mailing promises. No future launch is scheduled yet.
+- Admin remains product-only; do not restore a website builder or add a Drops screen. See `docs/drop-campaigns.md`.
+
+## Brand-name display rule (owner update)
+
+- Represent the brand as **గMANA** everywhere in website text: Telugu **గ** followed by uppercase Latin **MANA**. The asterisks in the owner's message were formatting, not part of the name.
+- The Telugu initial uses primary Kalam Ink (`#0B0B10`). Keep it readable on dark sections using a Bone backing, not a different glyph colour.
+- Use the shared `BrandName`/`BrandText` components for visible branding, including small labels, editorial copy, footer, navigation and admin. Use the canonical plain string for metadata, accessibility labels and the Razorpay checkout name. Razorpay does not support per-letter name styling.
+- Do not rename URLs, social handles, email addresses, asset paths, environment variables, database identifiers or existing order references. Preserve original garment photography and archival artwork rather than silently editing lettering printed in an image.

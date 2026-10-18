@@ -7,3 +7,5 @@ The owner is not a developer. All owner-facing instructions must be plain-langua
 
 - [Set up Razorpay payment notifications — step-by-step guide](docs/razorpay-webhook-guide.md)
 - [Technical checkout reference for developers](docs/razorpay-checkout.md)
+
+- [Drop campaigns and future launches](docs/drop-campaigns.md)

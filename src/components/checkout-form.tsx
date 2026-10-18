@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "@/lib/cart";
+import { brand } from "@/lib/brand";
 import { formatINR } from "@/lib/utils";
 
 import { FREE_SHIPPING_AT, SHIPPING_FEE } from "@/lib/checkout/pricing";
@@ -175,7 +176,7 @@ export function CheckoutForm({
           amount: data.razorpay.amount,
           currency: data.razorpay.currency,
           order_id: data.razorpay.orderId,
-          name: "GAMANA",
+          name: brand.name,
           description: `Order ${data.orderNumber}`,
           prefill: {
             name: `${form.firstName.trim()} ${form.lastName.trim()}`,

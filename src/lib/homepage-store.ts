@@ -1,4 +1,5 @@
 import "server-only";
+import { brandContent } from "./brand-name";
 import { unstable_cache } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getProducts } from "@/lib/catalog-store";
@@ -72,7 +73,7 @@ const readCached = unstable_cache(
 );
 
 export async function getHomepageSettings(): Promise<HomepageSettings> {
-  return { ...defaultHomepageSettings, ...((await readCached()) ?? {}) };
+  return brandContent({ ...defaultHomepageSettings, ...((await readCached()) ?? {}) });
 }
 
 export async function getStoreProducts() {

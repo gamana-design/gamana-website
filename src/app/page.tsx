@@ -1,17 +1,17 @@
-import { PageRenderer } from "@/components/site-content/page-renderer";
-import { getSitePage } from "@/lib/site-content";
+import { BrandName } from "@/components/brand-name";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { DropHome } from "@/components/drops/drop-home";
+import { getDropProducts, getDropSchedule } from "@/lib/drops";
+import { getStoreProducts } from "@/lib/homepage-store";
+
 export const dynamic = "force-dynamic";
+export function generateMetadata(): Metadata {
+  const { active } = getDropSchedule();
+  return { title: active ? `${active.name} — A గMANA Collection` : "గMANA — What Grounds You. Moves You.", description: active?.description, alternates: { canonical: "/" }, openGraph: active ? { title: `${active.name} by గMANA`, description: active.description, images: [active.heroImage] } : undefined };
+}
 export default async function HomePage() {
-  const page = await getSitePage("home");
-  return page ? (
-    <PageRenderer page={page} />
-  ) : (
-    <main className="min-h-[50vh] bg-kalam px-6 py-24 text-center text-bone">
-      <h1 className="font-display text-3xl">GAMANA is coming soon</h1>
-      <p className="mx-auto mt-3 max-w-lg text-bone/60">
-        Rooted in origin, made to move. Check back soon for the latest
-        collection.
-      </p>
-    </main>
-  );
+  const { active } = getDropSchedule();
+  if (!active) return <section className="container-gamana py-28"><p className="label text-ember"><BrandName /> / The next chapter</p><h1 className="mt-6 text-6xl">Something is taking shape.</h1><p className="mt-5 text-muted">Explore the pieces available in the meantime.</p><Link className="brand-button mt-8" href="/shop">Explore the shop</Link></section>;
+  return <DropHome campaign={active} products={getDropProducts(active, await getStoreProducts())} />;
 }

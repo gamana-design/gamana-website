@@ -24,11 +24,13 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "name", label: "Alphabetical" },
 ];
 
-export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonText }: { products: Product[]; coreComingSoon?: boolean; coreComingSoonText?: string }) {
+export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonText, campaign }: { products: Product[]; coreComingSoon?: boolean; coreComingSoonText?: string; campaign?: { id: string; name: string; productSlugs: readonly string[] } | null }) {
   const router = useRouter();
   const params = useSearchParams();
 
   const line = (params.get("line") as ProductLine | null) ?? null;
+  const dropId = params.get("drop");
+  const selectedCampaign = dropId && campaign?.id === dropId ? campaign : null;
   const category = (params.get("category") as ProductCategory | null) ?? null;
   const sort = (params.get("sort") as SortKey | null) ?? "featured";
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -44,6 +46,7 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
 
   const results = useMemo(() => {
     let list = [...products];
+    if (dropId) list = selectedCampaign ? list.filter(p => selectedCampaign.productSlugs.includes(p.slug)) : [];
     if (line) list = list.filter((p) => p.line === line);
     if (category) list = list.filter((p) => p.category === category);
 
@@ -68,14 +71,14 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
         );
     }
     return list;
-  }, [products, line, category, sort]);
+  }, [products, line, category, sort, dropId, selectedCampaign]);
 
-  const hasFilters = Boolean(line || category);
+  const hasFilters = Boolean(line || category || dropId);
 
   return (
     <div>
       {/* Filter bar */}
-      <div className="sticky top-[68px] z-30 border-y border-line bg-bone/90 backdrop-blur-xl md:top-[76px]">
+      <div className="shop-filter-bar sticky top-[66px] z-30 border-y border-line bg-bone/90 backdrop-blur-xl md:top-[80px]">
         <div className="container-gamana flex items-center gap-3 overflow-x-auto py-3.5 no-scrollbar">
           <button
             type="button"
@@ -109,6 +112,7 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
             </FilterPill>
           </div>
 
+          {campaign && <FilterPill active={Boolean(selectedCampaign)} onClick={() => setParam("drop", selectedCampaign ? null : campaign.id)}>{campaign.name}</FilterPill>}
           <span className="hidden h-5 w-px shrink-0 bg-line lg:block" />
 
           <div className="flex shrink-0 items-center gap-2">
@@ -218,7 +222,7 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
       <div className="container-gamana py-10 md:py-14">
         <div className="flex items-center justify-between">
           <p className="label text-muted">
-            {results.length} {results.length === 1 ? "piece" : "pieces"}
+            {selectedCampaign ? `${selectedCampaign.name} / ` : ""}{results.length} {results.length === 1 ? "piece" : "pieces"}
           </p>
           {hasFilters && (
             <button
@@ -242,7 +246,7 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={cn("mt-8 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3", results.length > 3 && "xl:grid-cols-4")}>
             {results.map((product, i) => (
               <motion.div
                 key={product.id}
