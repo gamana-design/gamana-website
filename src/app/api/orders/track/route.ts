@@ -29,6 +29,8 @@ export async function GET(request: Request) {
     order_number: string;
     status: string;
     payment_gateway: string;
+    payment_mode: string | null;
+    payment_status: string;
     total_order_value: number;
     created_at: string;
     qikink_status: string | null;
@@ -42,7 +44,7 @@ export async function GET(request: Request) {
     const { data } = await supabase
       .from("orders")
       .select(
-        "order_number,status,payment_gateway,total_order_value,created_at,qikink_status,tracking_link,awb",
+        "order_number,status,payment_gateway,payment_mode,payment_status,total_order_value,created_at,qikink_status,tracking_link,awb",
       )
       .eq("order_number", reference)
       .maybeSingle();
@@ -52,7 +54,14 @@ export async function GET(request: Request) {
   let live: { status: string; tracking?: string; awb?: string | null } | null =
     null;
 
-  if (isConfigured()) {
+  if (
+    isConfigured() &&
+    local?.payment_mode !== "test" &&
+    (!local ||
+      local.payment_status === "legacy" ||
+      local.payment_status === "paid" ||
+      local.payment_gateway === "COD")
+  ) {
     const result = await listOrders({ orderReferenceNo: reference });
     const match = result.orders.find(
       (o) =>
@@ -81,6 +90,8 @@ export async function GET(request: Request) {
       reference,
       status: live?.status ?? local?.qikink_status ?? local?.status ?? "placed",
       payment: local?.payment_gateway ?? null,
+      paymentStatus: local?.payment_status ?? null,
+      testMode: local?.payment_mode === "test",
       total: local?.total_order_value ?? null,
       placedAt: local?.created_at ?? null,
       trackingLink: live?.tracking ?? local?.tracking_link ?? null,
