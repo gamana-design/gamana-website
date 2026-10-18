@@ -5,13 +5,13 @@ import { notFound } from "next/navigation";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
-import { getProductBySlug, getProducts } from "@/lib/catalog-store";
+import { getStoreProducts } from "@/lib/homepage-store";
 import { brand } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
-  return (await getProducts()).map((product) => ({ slug: product.slug }));
+  return (await getStoreProducts()).map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({
@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = (await getStoreProducts()).find((p) => p.slug === slug);
   if (!product) return { title: "Product not found" };
 
   return {
@@ -41,10 +41,10 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = (await getStoreProducts()).find((p) => p.slug === slug);
   if (!product) notFound();
 
-  const related = (await getProducts())
+  const related = (await getStoreProducts())
     .filter((p) => p.id !== product.id && p.line === product.line)
     .slice(0, 4);
 

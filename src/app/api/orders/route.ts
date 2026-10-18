@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/catalog-store";
+import { getStoreProducts } from "@/lib/homepage-store";
 import { NextResponse } from "next/server";
 
 import { resolveSku } from "@/data/catalog";
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
   /* — resolve lines against the server catalogue ——————————————— */
 
-  const catalogue = await getProducts();
+  const catalogue = await getStoreProducts();
   const lines = items
     .map((item) => {
       const product = catalogue.find((p) => p.slug === item.productSlug);

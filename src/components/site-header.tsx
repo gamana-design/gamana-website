@@ -44,9 +44,14 @@ export function Wordmark({
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [announcementItems, setAnnouncementItems] = useState(["Free shipping across India over ₹1,499", "Two lines. One mindset.", "Printed on demand — dispatched in 3 days", "From gym to street, without changing who you are"]);
   const [menuOpen, setMenuOpen] = useState(false);
   const { count, open } = useCart();
   const pathname = usePathname();
+
+  useEffect(() => {
+    fetch("/api/homepage").then(r => r.ok ? r.json() : null).then(data => { if (Array.isArray(data?.announcementItems) && data.announcementItems.length) setAnnouncementItems(data.announcementItems); }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -75,12 +80,7 @@ export function SiteHeader() {
         <Marquee
           slow
           className="py-2.5"
-          items={[
-            "Free shipping across India over ₹1,499",
-            "Two lines. One mindset.",
-            "Printed on demand — dispatched in 3 days",
-            "From gym to street, without changing who you are",
-          ]}
+          items={announcementItems}
         />
       </div>
 

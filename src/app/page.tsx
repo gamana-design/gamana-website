@@ -5,14 +5,15 @@ import { Marquee } from "@/components/marquee";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { ProductCard } from "@/components/product-card";
 import { Reveal, RevealText } from "@/components/reveal";
-import { getProducts } from "@/lib/catalog-store";
+import { getStoreProducts } from "@/lib/homepage-store";
+import { getHomepageSettings } from "@/lib/homepage-store";
 import { journal, lookbook, brandArt } from "@/data/editorial";
 import { brand, lines, values, voice } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const products = await getProducts();
+  const [products, content] = await Promise.all([getStoreProducts(), getHomepageSettings()]);
   const featured = products.filter((p) => p.featured).slice(0, 4);
   const urban = products.filter((p) => p.line === "URBAN").slice(0, 3);
   const core = products.filter((p) => p.line === "CORE").slice(0, 3);
@@ -24,7 +25,7 @@ export default async function HomePage() {
         <div className="absolute inset-0" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/brand/street-sunset.jpg"
+            src={content.heroImage}
             alt=""
             className="h-full w-full object-cover"
           />
@@ -40,39 +41,38 @@ export default async function HomePage() {
           <h1 className="mt-6 font-display text-[clamp(2.9rem,11.5vw,9.5rem)] font-bold uppercase leading-[0.84] tracking-[-0.055em]">
             <span className="block overflow-hidden">
               <span className="block animate-rise [animation-delay:120ms]">
-                What grounds
+                {content.heroLineOne}
               </span>
             </span>
             <span className="block overflow-hidden">
               <span className="block animate-rise [animation-delay:220ms]">
-                you. <span className="text-ember">Moves</span> you.
+                {content.heroLead} <span className="text-ember">{content.heroAccent}</span> {content.heroTail}
               </span>
             </span>
           </h1>
           <div className="mt-10 flex flex-col gap-8 border-t border-bone/15 pt-8 md:flex-row md:items-end md:justify-between">
             <div className="animate-rise [animation-delay:420ms]">
-              <p className="label text-ember">{brand.drop}</p>
+              <p className="label text-ember">{content.heroEyebrow}</p>
               <p className="mt-3 max-w-md text-pretty text-[0.98rem] leading-relaxed text-bone/70">
-                {brand.description} Two lines — URBAN and CORE — built around
-                where you came from and where you are going.
+                {content.heroDescription}
               </p>
             </div>
             <div className="flex animate-rise flex-wrap items-center gap-3 [animation-delay:520ms]">
               <Link
-                href="/shop"
+                href={content.primaryHref}
                 className="group inline-flex items-center gap-2.5 rounded-full bg-bone px-7 py-4 text-[0.78rem] font-medium uppercase tracking-[0.18em] text-kalam transition-transform hover:scale-[1.02]"
               >
-                Shop the drop
+                {content.primaryCta}
                 <ArrowUpRight
                   className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   strokeWidth={1.7}
                 />
               </Link>
               <Link
-                href="/about"
+                href={content.secondaryHref}
                 className="inline-flex items-center gap-2.5 rounded-full border border-bone/30 px-7 py-4 text-[0.78rem] font-medium uppercase tracking-[0.18em] text-bone transition-colors hover:border-bone/70"
               >
-                Our story
+                {content.secondaryCta}
               </Link>
             </div>
           </div>
@@ -92,15 +92,13 @@ export default async function HomePage() {
         <div className="container-gamana">
           <Reveal className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="label text-muted">The collection</p>
+              <p className="label text-muted">{content.collectionEyebrow}</p>
               <h2 className="mt-4 max-w-2xl font-display text-[clamp(2.1rem,5.4vw,4.2rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
-                Two lines. <span className="text-muted">One mindset.</span>
+                {content.collectionTitle}
               </h2>
             </div>
             <p className="max-w-sm text-pretty text-[0.95rem] leading-relaxed text-muted">
-              URBAN is what you wear when the day is yours. CORE is what you wear
-              when you are working at it. Same brand, same mindset, different
-              hours.
+              {content.collectionDescription}
             </p>
           </Reveal>
 
@@ -136,7 +134,7 @@ export default async function HomePage() {
                         {line.blurb}
                       </p>
 
-                      <ul className="mt-6 space-y-2">
+                      {items.length > 0 ? <ul className="mt-6 space-y-2">
                         {items.map((p) => (
                           <li key={p.id}>
                             <Link
@@ -151,14 +149,14 @@ export default async function HomePage() {
                             </Link>
                           </li>
                         ))}
-                      </ul>
+                      </ul> : line.key === "CORE" && content.coreComingSoon ? <div className="mt-6 rounded-[3px] border border-bone/15 bg-bone/5 p-4"><p className="label text-neelam">Coming soon</p><p className="mt-2 max-w-sm text-sm text-bone/65">{content.coreComingSoonText}</p></div> : null}
 
-                      <Link
+                      {!content.coreComingSoon || line.key !== "CORE" ? <Link
                         href={line.href}
                         className="mt-7 inline-flex items-center gap-2 rounded-full border border-bone/30 px-6 py-3.5 text-[0.75rem] font-medium uppercase tracking-[0.18em] text-bone transition-colors hover:border-bone/70"
                       >
                         Shop {line.name}
-                      </Link>
+                      </Link> : null}
                     </div>
                   </div>
                 </Reveal>
@@ -173,9 +171,9 @@ export default async function HomePage() {
         <div className="container-gamana">
           <Reveal className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="label text-muted">Drop 01 · {brand.markets.join(" & ")}</p>
+              <p className="label text-muted">{content.featuredEyebrow} · {brand.markets.join(" & ")}</p>
               <h2 className="mt-4 font-display text-[clamp(2.1rem,5.4vw,4.2rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
-                The first pieces
+                {content.featuredTitle}
               </h2>
             </div>
             <Link

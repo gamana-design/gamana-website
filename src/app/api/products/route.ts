@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getProducts } from "@/lib/catalog-store";
+import { getStoreProducts } from "@/lib/homepage-store";
 import { isConfigured, ping, tryFetchCatalogue } from "@/lib/qikink";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  * so the storefront can show an honest fulfilment status.
  */
 export async function GET() {
-  const products = await getProducts();
+  const products = await getStoreProducts();
   let source: "qikink" | "curated" = "curated";
   let qikinkCatalogueAvailable = false;
   let fulfilment: { connected: boolean; detail: string } = {

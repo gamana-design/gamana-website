@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { ShopBrowser } from "@/components/shop-browser";
 import { brand } from "@/lib/brand";
-import { getProducts } from "@/lib/catalog-store";
+import { getStoreProducts, getHomepageSettings } from "@/lib/homepage-store";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ShopPage() {
-  const products = await getProducts();
+  const [products, homepage] = await Promise.all([getStoreProducts(), getHomepageSettings()]);
   return (
     <>
       <section className="border-b border-line bg-bone-deep/40">
@@ -32,7 +32,7 @@ export default async function ShopPage() {
       </section>
 
       <Suspense fallback={<div className="container-gamana py-20" />}>
-        <ShopBrowser products={products} />
+        <ShopBrowser products={products} coreComingSoon={homepage.coreComingSoon} coreComingSoonText={homepage.coreComingSoonText} />
       </Suspense>
     </>
   );

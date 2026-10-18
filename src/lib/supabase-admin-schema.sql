@@ -6,3 +6,12 @@ create table if not exists gamana_admin_log (id uuid primary key default gen_ran
 create index if not exists gamana_admin_log_created_at_idx on gamana_admin_log(created_at desc);
 insert into storage.buckets(id,name,public) values ('gamana-media','gamana-media',true) on conflict(id) do nothing;
 do $$ begin if not exists(select 1 from pg_policies where tablename='objects' and policyname='gamana media public read') then create policy "gamana media public read" on storage.objects for select using(bucket_id='gamana-media'); end if; end $$;
+
+-- Drop-specific homepage copy and switches. Server reads/writes this via the
+-- service-role client; no anon policies are required.
+create table if not exists public.gamana_homepage_settings (
+  id integer primary key check (id = 1),
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.gamana_homepage_settings enable row level security;
