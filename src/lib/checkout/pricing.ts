@@ -28,8 +28,15 @@ export function validateCustomer(value: unknown): Customer {
   if (!value || typeof value !== "object")
     throw new CheckoutError("Please enter your delivery details.");
   const c = value as Record<string, unknown>;
+  // Keep the existing stored full name compatible with previous checkout sessions.
+  // New checkout requests must supply both name fields, never fall back if one is blank.
+  const separateNames = "firstName" in c || "lastName" in c;
+  const firstName = text(c.firstName, 50).replace(/\s+/g, " ");
+  const lastName = text(c.lastName, 49).replace(/\s+/g, " ");
+  if (separateNames && (!firstName || !lastName))
+    throw new CheckoutError("Please enter your first and last name.");
   const customer: Customer = {
-    fullName: text(c.fullName, 100),
+    fullName: separateNames ? `${firstName} ${lastName}` : text(c.fullName, 100),
     email: text(c.email, 254).toLowerCase(),
     phone: text(c.phone, 20).replace(/[\s()-]/g, ""),
     address1: text(c.address1, 90),

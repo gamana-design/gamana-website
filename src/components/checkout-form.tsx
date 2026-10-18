@@ -40,7 +40,8 @@ export function CheckoutForm({
 }) {
   const { lines, subtotal, clear, count } = useCart();
   const [form, setForm] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address1: "",
@@ -184,7 +185,7 @@ export function CheckoutForm({
           name: "GAMANA",
           description: `Order ${data.orderNumber}`,
           prefill: {
-            name: form.fullName,
+            name: `${form.firstName.trim()} ${form.lastName.trim()}`,
             email: form.email,
             contact: form.phone,
           },
@@ -337,18 +338,35 @@ export function CheckoutForm({
           disabled={state === "loading"}
           className="mt-9 grid gap-5 sm:grid-cols-2"
         >
-          <Field label="Full name" htmlFor="fullName" className="sm:col-span-2">
+          <Field label="First name" htmlFor="firstName">
             <input
-              id="fullName"
-              value={form.fullName}
-              onChange={update("fullName")}
+              id="firstName"
+              name="firstName"
+              value={form.firstName}
+              onChange={update("firstName")}
               required
-              autoComplete="name"
+              maxLength={50}
+              pattern=".*\S.*"
+              autoComplete="given-name"
               className="input-base"
-              placeholder="Your name"
+              placeholder="First name"
             />
           </Field>
-          <Field label="Email" htmlFor="email">
+          <Field label="Last name" htmlFor="lastName">
+            <input
+              id="lastName"
+              name="lastName"
+              value={form.lastName}
+              onChange={update("lastName")}
+              required
+              maxLength={49}
+              pattern=".*\S.*"
+              autoComplete="family-name"
+              className="input-base"
+              placeholder="Last name"
+            />
+          </Field>
+          <Field label="Contact email" htmlFor="email">
             <input
               id="email"
               type="email"
@@ -360,20 +378,25 @@ export function CheckoutForm({
               placeholder="you@email.com"
             />
           </Field>
-          <Field label="Phone" htmlFor="phone">
+          <Field label="Contact number (10 digits)" htmlFor="phone">
             <input
               id="phone"
               type="tel"
               value={form.phone}
               onChange={update("phone")}
               required
-              autoComplete="tel"
+              autoComplete="tel-national"
+              inputMode="numeric"
+              minLength={10}
+              maxLength={10}
+              pattern="[6-9][0-9]{9}"
+              title="Enter your 10-digit Indian mobile number without +91."
               className="input-base"
-              placeholder="+91 98765 43210"
+              placeholder="9876543210"
             />
           </Field>
           <Field
-            label="Address line 1"
+            label="Shipping address"
             htmlFor="address1"
             className="sm:col-span-2"
           >
@@ -381,6 +404,7 @@ export function CheckoutForm({
               id="address1"
               value={form.address1}
               onChange={update("address1")}
+              maxLength={90}
               required
               autoComplete="address-line1"
               className="input-base"
@@ -388,7 +412,7 @@ export function CheckoutForm({
             />
           </Field>
           <Field
-            label="Address line 2"
+            label="Shipping address 2"
             htmlFor="address2"
             className="sm:col-span-2"
             optional
@@ -397,9 +421,10 @@ export function CheckoutForm({
               id="address2"
               value={form.address2}
               onChange={update("address2")}
+              maxLength={90}
               autoComplete="address-line2"
               className="input-base"
-              placeholder="Landmark, city"
+              placeholder="Landmark or additional address details"
             />
           </Field>
           <Field label="City" htmlFor="city">
@@ -424,7 +449,7 @@ export function CheckoutForm({
               placeholder="Telangana"
             />
           </Field>
-          <Field label="PIN / ZIP" htmlFor="zip">
+          <Field label="Shipping PIN code" htmlFor="zip">
             <input
               id="zip"
               maxLength={6}
@@ -499,6 +524,18 @@ export function CheckoutForm({
               </label>
             ))}
         </div>
+
+        {payment === "COD" && (
+          <div className="mt-5 rounded border border-line p-4">
+            <p className="text-sm text-muted">
+              COD value — amount to pay on delivery
+            </p>
+            <p className="mt-1 font-medium tabular-nums">{formatINR(total)}</p>
+            <p className="mt-1 text-sm text-muted">
+              Calculated automatically from your order total, including shipping.
+            </p>
+          </div>
+        )}
 
         {error && (
           <p role="alert" className="mt-6 text-[0.88rem] text-error">

@@ -86,6 +86,31 @@ test("normalises delivery details and validates Indian contact/address data", ()
     assert.throws(() => validateCustomer(bad));
 });
 
+test("checkout accepts separate customer names and requires both when provided", () => {
+  const { fullName: _legacyName, ...contact } = customer;
+  const details = { ...contact, firstName: "  Test  ", lastName: "  Customer  " };
+  assert.equal(validateCustomer(details).fullName, "Test Customer");
+  assert.equal(
+    validateCustomer({ ...details, phone: "9876543210" }).phone,
+    "9876543210",
+  );
+  assert.equal(
+    validateCustomer({ ...details, address2: "Near the park" }).address2,
+    "Near the park",
+  );
+  for (const bad of [
+    { ...details, firstName: " " },
+    { ...details, lastName: "" },
+    { ...details, firstName: undefined },
+    { ...details, fullName: "Ignored Name", lastName: " " },
+    { ...details, lastName: 123 },
+    { ...details, phone: "987654321" },
+    { ...details, phone: "98765432101" },
+  ]) assert.throws(() => validateCustomer(bad));
+  // Previously saved sessions using a full name remain valid.
+  assert.equal(validateCustomer(customer).fullName, "Test Customer");
+});
+
 test("payment and webhook HMACs fail closed for forged or malformed signatures", () => {
   const secret = "test-only-fixture-not-a-real-secret";
   const payload = "order_fixture|pay_fixture";
