@@ -44,3 +44,10 @@ These preferences apply to future work on this project as well as the current re
 - The Telugu initial uses primary Kalam Ink (`#0B0B10`). Keep it readable on dark sections using a Bone backing, not a different glyph colour.
 - Use the shared `BrandName`/`BrandText` components for visible branding, including small labels, editorial copy, footer, navigation and admin. Use the canonical plain string for metadata, accessibility labels and the Razorpay checkout name. Razorpay does not support per-letter name styling.
 - Do not rename URLs, social handles, email addresses, asset paths, environment variables, database identifiers or existing order references. Preserve original garment photography and archival artwork rather than silently editing lettering printed in an image.
+
+## Standalone glyph and colour hold (owner update)
+
+- The standalone brand symbol is now Telugu **గ**, replacing the runner symbol in website identity and browser/home-screen icons. Keep the **గMANA** wordmark unchanged.
+- Use `BrandGlyph` or `/images/brand/ga-glyph.svg` for standalone identity. The outlined master uses Noto Sans Telugu 600 and existing Kalam Ink; Bone backs it on dark surfaces.
+- Do not modify the runner printed on real garments, product photographs or archival artwork. The old runner asset is archival, not the active website symbol.
+- The general brand colour rethink is **on hold**. Do not change palette values or introduce a new colour scheme until the owner resumes it.

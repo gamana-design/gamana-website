@@ -1,4 +1,4 @@
-# గMANA — Brand & Design System Spec v1.1
+# గMANA — Brand & Design System Spec v1.2
 
 *Companion to the GAMANA Brand Identity Document v1.0.*
 *Site: https://gamana-wear.vercel.app · Repo: github.com/gamana-design/gamana-website*
@@ -24,6 +24,10 @@ Founded 2026 in Hyderabad, India. Markets: India & USA. Lines: **URBAN** × **CO
 ---
 
 ## 2. Colour
+
+**Owner hold:** a general colour rethink is on hold. Keep the current palette
+unchanged until the owner resumes it. The new glyph uses existing Kalam Ink
+and Bone only; it does not introduce a new colour scheme.
 
 Every value below was **sampled directly from the live brand artwork** in Drive
 (the Godavari tees, the gradient wordmark, the printed posters) — not chosen from
@@ -84,7 +88,21 @@ include literal asterisks.
 - URLs, email addresses, social handles, filenames, stored references and internal
   identifiers keep their existing spelling.
 
-Existing brush artwork, original product photography and the runner glyph are
+### Standalone symbol — owner-approved replacement
+
+Use Telugu **గ** as the standalone brand glyph in place of the runner symbol
+for website identity, browser tabs and saved home-screen icons. The **గMANA**
+wordmark stays unchanged.
+
+- Master: `public/images/brand/ga-glyph.svg`; outlined from self-hosted Noto Sans
+  Telugu 600 (SIL Open Font License), so it renders without a font download.
+- Shared component: `BrandGlyph` in `src/components/brand-name.tsx`.
+- Browser icon: `src/app/icon.png`; home-screen icon: `src/app/apple-icon.png`.
+- Use existing Kalam Ink for the glyph, with existing Bone behind it on dark
+  surfaces. Keep the shape and proportions intact; do not redraw it as a runner.
+- `runner-glyph.png` is retained only as an archival source, not an active logo.
+
+Existing brush artwork, original product photography and the old runner are
 archival assets. Do not alter lettering within photographs or invent changed
 prints. Replace such artwork only with owner-approved new source assets. This
 website naming rule supersedes the older all-Latin text lockup.
