@@ -2,12 +2,28 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["*.e2b.app"],
+  devIndicators: false,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.qikink.com" },
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
+  },
+  async redirects() {
+    return [
+      "pages",
+      "homepage",
+      "journal",
+      "orders",
+      "messages",
+      "settings",
+    ].map((section) => ({
+      source: `/admin/${section}/:path*`,
+      destination: "/admin/products",
+      permanent: false,
+    }));
   },
   async headers() {
     return [

@@ -1,1 +1,33 @@
-import Link from "next/link";import {notFound} from "next/navigation";import {getAllProducts} from "@/lib/catalog-store";import {ProductEditor} from "@/components/admin/product-editor";export const dynamic="force-dynamic";export const metadata={robots:{index:false}};export default async function EditProduct({params}:{params:Promise<{id:string}>}){const {id}=await params;if(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id))return <section className="rounded border border-bone/10 p-8"><h1 className="font-display text-2xl">Import the catalogue first</h1><p className="mt-2 text-bone/60">Seed products need to be imported before they can be edited.</p><Link className="mt-4 inline-block text-ember" href="/admin">Back to overview →</Link></section>;const product=await getAllProducts().then(ps=>ps.find(p=>p.id===id));if(!product)notFound();return <><h1 className="mb-6 font-display text-4xl font-bold">Edit product</h1><ProductEditor product={product}/></>}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getProductById } from "@/lib/catalog-store";
+import { ProductEditor } from "@/components/admin/product-editor";
+
+export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false } };
+
+export default async function EditProduct({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  )
+    notFound();
+  const product = await getProductById(id);
+  if (!product) notFound();
+  return (
+    <>
+      <Link
+        href="/admin/products"
+        className="mb-4 inline-block text-xs text-bone/60 hover:text-ember"
+      >
+        ← Back to products
+      </Link>
+      <h1 className="mb-6 font-display text-4xl font-bold">Edit product</h1>
+      <ProductEditor product={product} />
+    </>
+  );
+}

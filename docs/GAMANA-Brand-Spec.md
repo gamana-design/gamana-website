@@ -1,4 +1,4 @@
-# GAMANA — Brand & Design System Spec v1.0
+# గMANA — Brand & Design System Spec v1.2
 
 *Companion to the GAMANA Brand Identity Document v1.0.*
 *Site: https://gamana-wear.vercel.app · Repo: github.com/gamana-design/gamana-website*
@@ -7,7 +7,7 @@
 
 ## 1. The brand in one line
 
-**GAMANA** — *What Grounds You. Moves You.*
+**గMANA** — *What Grounds You. Moves You.*
 
 Casual streetwear and performance apparel, rooted in culture, made for movement.
 Founded 2026 in Hyderabad, India. Markets: India & USA. Lines: **URBAN** × **CORE**.
@@ -18,12 +18,16 @@ Founded 2026 in Hyderabad, India. Markets: India & USA. Lines: **URBAN** × **CO
 | Tagline | What Grounds You. Moves You. |
 | Campaign line | Rooted in origin, made to move. |
 | Descriptor | Casual & Performance Apparel |
-| Wordmark | `GAMANA` (English) + `గమన` (Telugu sub-line) |
+| Wordmark | `గMANA` — Telugu `గ` + uppercase Latin `MANA` |
 | Instagram | [@gamana.wear](https://www.instagram.com/gamana.wear) |
 
 ---
 
 ## 2. Colour
+
+**Owner hold:** a general colour rethink is on hold. Keep the current palette
+unchanged until the owner resumes it. The new glyph uses existing Kalam Ink
+and Bone only; it does not introduce a new colour scheme.
 
 Every value below was **sampled directly from the live brand artwork** in Drive
 (the Godavari tees, the gradient wordmark, the printed posters) — not chosen from
@@ -65,20 +69,43 @@ Fonts are self-hosted via `@fontsource` — no build-time network dependency.
 
 ---
 
-## 4. The wordmark
+## 4. The wordmark — owner-approved update
 
-The primary mark is **brush-lettered**: a Didone skeleton filled with magenta,
-teal, violet, orange and gold brush strokes over a warm paper cream, with a
-running figure above it. It is **not** typeset, and it is never re-drawn in UI.
+The primary website wordmark is **గMANA**: the Telugu letter **గ** immediately
+followed by uppercase Latin **MANA**. Do not append a second Telugu sub-line or
+include literal asterisks.
 
-Two live variants ship on the site:
-- `logo-wordmark.png` — transparent PNG, extracted from the master art. Used in
-  the footer and on the About page.
-- Live text wordmark — Space Grotesk 700, used in the header, footer and the
-  oversized footer lockup.
+- The Telugu initial uses **Kalam Ink `#0B0B10`**, the primary brand colour.
+- On dark surfaces, a Bone backing preserves the initial's contrast while the
+  Latin letters can follow the light text treatment.
+- Telugu uses the existing self-hosted Noto Sans Telugu font. The wordmark's
+  Latin letters use Space Grotesk. In prose they can inherit the paragraph font.
+- The shared `BrandName` and `BrandText` components keep spelling and treatment
+  consistent across navigation, footers, campaigns, editorial pages and admin.
+- Page titles, accessible names, structured data and Razorpay's plain-text
+  checkout name use the same spelling. Hosted payment interfaces do not allow
+  per-letter styling of that name.
+- URLs, email addresses, social handles, filenames, stored references and internal
+  identifiers keep their existing spelling.
 
-The running figure (`runner-glyph.png`) is the reduced mark: the same hand,
-one gesture.
+### Standalone symbol — owner-approved replacement
+
+Use Telugu **గ** as the standalone brand glyph in place of the runner symbol
+for website identity, browser tabs and saved home-screen icons. The **గMANA**
+wordmark stays unchanged.
+
+- Master: `public/images/brand/ga-glyph.svg`; outlined from self-hosted Noto Sans
+  Telugu 600 (SIL Open Font License), so it renders without a font download.
+- Shared component: `BrandGlyph` in `src/components/brand-name.tsx`.
+- Browser icon: `src/app/icon.png`; home-screen icon: `src/app/apple-icon.png`.
+- Use existing Kalam Ink for the glyph, with existing Bone behind it on dark
+  surfaces. Keep the shape and proportions intact; do not redraw it as a runner.
+- `runner-glyph.png` is retained only as an archival source, not an active logo.
+
+Existing brush artwork, original product photography and the old runner are
+archival assets. Do not alter lettering within photographs or invent changed
+prints. Replace such artwork only with owner-approved new source assets. This
+website naming rule supersedes the older all-Latin text lockup.
 
 ---
 
@@ -174,4 +201,4 @@ own pace · fashion meets function → style and movement, seamlessly combined.
 
 ---
 
-*Maintained with the GAMANA website codebase. v1.0 — October 2026.*
+*Maintained with the GAMANA website codebase. v1.1 — October 2026.*

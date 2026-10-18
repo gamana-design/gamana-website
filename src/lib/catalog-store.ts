@@ -1,4 +1,6 @@
 import "server-only";
+import { brandContent } from "./brand-name";
+import { isDesignPreview } from "./design-preview";
 import { unstable_cache, revalidateTag } from "next/cache";
 import type { Product } from "@/data/catalog";
 import { getSupabaseAdmin } from "@/lib/supabase";
@@ -10,7 +12,7 @@ export function rowToProduct(row: ProductRow): Product & { active: boolean; prin
 }
 const readRows = unstable_cache(async () => { const db=getSupabaseAdmin(); if(!db) return null; const {data,error}=await db.from("gamana_products").select("*, gamana_product_variants(*)").order("position").order("position",{ referencedTable:"gamana_product_variants" }); if(error) throw error; return data?.length ? data.map(rowToProduct) : null; },["gamana-catalogue"],{revalidate:60,tags:["gamana-products"]});
 export async function getAllProducts():Promise<Product[]> { return (await readRows()) ?? []; }
-export async function getProducts():Promise<Product[]> { return (await readRows())?.filter(p=>(p as Product & {active?:boolean}).active!==false) ?? []; }
+export async function getProducts():Promise<Product[]> { if (isDesignPreview()) return brandContent((await import("@/data/legacy-catalog")).products); return brandContent((await readRows())?.filter(p=>(p as Product & {active?:boolean}).active!==false) ?? []); }
 export async function getProductBySlug(slug:string) { return (await getProducts()).find(p=>p.slug===slug); }
 export async function getProductById(id:string) { return (await getAllProducts()).find(p=>p.id===id); }
 function columns(d:ProductDraft) { return {slug:d.slug,name:d.name,line:d.line??"URBAN",category:d.category??"T-Shirts",price:d.price??0,compare_at:d.compareAt??null,image:d.image??"",gallery:d.gallery??[],blurb:d.blurb??"",description:d.description??"",details:d.details??[],tags:d.tags??[],badge:d.badge??null,featured:d.featured??false,is_new:d.isNew??false,print_type_id:d.printTypeId??1,sku_prefix:d.skuPrefix??"",design_code:d.designCode??null,design_url:d.designUrl??null,mockup_url:d.mockupUrl??null,placement_sku:d.placementSku??"fr",width_inches:d.widthInches??null,height_inches:d.heightInches??null,active:d.active??true,updated_at:new Date().toISOString()}; }

@@ -6,7 +6,13 @@ import { CartProvider } from "@/lib/cart";
 import { brand, boilerplate } from "@/lib/brand";
 import { absoluteUrl } from "@/lib/utils";
 
+import { BrandText } from "@/components/brand-name";
+import { isDesignPreview } from "@/lib/design-preview";
+import { getDropSchedule } from "@/lib/drops";
+
 import "./globals.css";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(absoluteUrl("/")),
@@ -16,7 +22,7 @@ export const metadata: Metadata = {
   },
   description: brand.description,
   keywords: [
-    "GAMANA",
+    brand.name,
     "streetwear India",
     "performance apparel",
     "cultural streetwear",
@@ -51,6 +57,8 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { active, nextChange } = getDropSchedule();
+  const campaign = active ? { id: active.id, name: active.name } : null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -76,13 +84,14 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {isDesignPreview() && <div className="design-preview-notice">Design preview · Sample catalogue · Payments unavailable</div>}
         <CartProvider>
           <div className="flex min-h-screen flex-col">
-            <SiteChrome>{children}</SiteChrome>
+            <SiteChrome campaign={campaign} nextChange={nextChange}>{children}</SiteChrome>
           </div>
           <CartDrawer />
         </CartProvider>
-        <p className="sr-only">{boilerplate}</p>
+        <p className="sr-only"><BrandText>{boilerplate}</BrandText></p>
       </body>
     </html>
   );

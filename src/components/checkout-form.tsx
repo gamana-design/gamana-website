@@ -3,18 +3,44 @@
 import { motion } from "framer-motion";
 import { Check, Loader2, Lock } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useCart } from "@/lib/cart";
+import { brand } from "@/lib/brand";
 import { formatINR } from "@/lib/utils";
 
-const FREE_SHIPPING_AT = 1499;
-const SHIPPING_FEE = 79;
+import { FREE_SHIPPING_AT, SHIPPING_FEE } from "@/lib/checkout/pricing";
+import {
+  openRazorpay,
+  type PaymentResult,
+} from "@/lib/checkout/razorpay-browser";
 
-export function CheckoutForm() {
+const PENDING_KEY = "gamana.checkout.payment";
+const SESSION_KEY = "gamana.checkout.session";
+type PendingPayment = { result: PaymentResult; orderNumber: string };
+async function postJSON(url: string, body: unknown) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data)
+    throw new Error(data?.error || "Could not reach checkout. Please retry.");
+  return data;
+}
+
+export function CheckoutForm({
+  testMode = true,
+  onlineEnabled = false,
+}: {
+  testMode?: boolean;
+  onlineEnabled?: boolean;
+}) {
   const { lines, subtotal, clear, count } = useCart();
   const [form, setForm] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address1: "",
@@ -24,12 +50,14 @@ export function CheckoutForm() {
     zip: "",
     countryCode: "IN",
   });
-  const [payment, setPayment] = useState<"Prepaid" | "COD">("Prepaid");
-  const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [state, setState] = useState<
+    "idle" | "loading" | "done" | "error" | "pending"
+  >("idle");
   const [error, setError] = useState("");
   const [placed, setPlaced] = useState<{
     orderNumber: string;
     message: string;
+    testMode?: boolean;
   } | null>(null);
 
   function update(key: keyof typeof form) {
@@ -42,43 +70,176 @@ export function CheckoutForm() {
   const shipping = subtotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
   const total = subtotal + shipping;
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const busy = useRef(false);
+  const [pending, setPending] = useState<PendingPayment | null>(null);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(PENDING_KEY) || "null");
+      if (saved?.result?.razorpay_payment_id && saved?.orderNumber) {
+        setPending(saved);
+        setState("pending");
+      }
+    } catch {
+      /* private browsing or invalid saved session */
+    }
+  }, []);
+
+  function finish(data: {
+    orderNumber: string;
+    message: string;
+    testMode?: boolean;
+  }) {
+    setPlaced(data);
+    setPending(null);
+    setState("done");
+    clear();
+    try {
+      sessionStorage.removeItem(PENDING_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* optional persistence */
+    }
+  }
+
+  async function verify(saved: PendingPayment) {
+    const data = await postJSON("/api/payments/verify", saved.result);
+    finish(data);
+  }
+
+  async function retryVerification() {
+    if (!pending || busy.current) return;
+    busy.current = true;
     setState("loading");
     setError("");
     try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: lines.map((l) => ({
-            productSlug: l.slug,
-            size: l.size,
-            color: l.color,
-            quantity: l.quantity,
-          })),
-          customer: form,
-          payment,
-        }),
-      });
-      const data = (await res.json()) as {
-        orderNumber?: string;
-        message?: string;
-        error?: string;
-      };
-      if (!res.ok || !data.orderNumber) {
-        throw new Error(data.error || "Could not place the order.");
-      }
-      setPlaced({ orderNumber: data.orderNumber, message: data.message ?? "" });
-      setState("done");
-      clear();
-    } catch (err) {
+      await verify(pending);
+    } catch (error) {
       setError(
-        err instanceof Error ? err.message : "Could not place the order. Try again.",
+        error instanceof Error ? error.message : "Verification is pending.",
       );
-      setState("error");
+      setState("pending");
+    } finally {
+      busy.current = false;
     }
   }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy.current || pending) return;
+    busy.current = true;
+    setState("loading");
+    setError("");
+    let received: PendingPayment | null = null;
+    try {
+      const payload = {
+        items: lines.map((l) => ({
+          productSlug: l.slug,
+          size: l.size,
+          color: l.color,
+          quantity: l.quantity,
+        })),
+        customer: form,
+        payment: "Prepaid",
+        expectedAmount: Math.round(total * 100),
+      };
+      const fingerprint = JSON.stringify(payload);
+      let checkoutKey = crypto.randomUUID();
+      try {
+        const session = JSON.parse(
+          sessionStorage.getItem(SESSION_KEY) || "null",
+        );
+        if (session?.fingerprint === fingerprint && session?.checkoutKey)
+          checkoutKey = session.checkoutKey;
+        else
+          sessionStorage.setItem(
+            SESSION_KEY,
+            JSON.stringify({ fingerprint, checkoutKey }),
+          );
+      } catch {
+        /* server still validates every request */
+      }
+      const data = await postJSON("/api/orders", { ...payload, checkoutKey });
+      if (data.paid) {
+        // A previous callback/webhook already confirmed this exact checkout.
+        finish({
+          orderNumber: data.orderNumber,
+          testMode: data.testMode,
+          message: "Payment already received for this order. Do not pay again.",
+        });
+        return;
+      }
+      if (!data.razorpay?.orderId)
+        throw new Error("Payment session could not be created.");
+      const result = await openRazorpay(
+        {
+          key: data.razorpay.keyId,
+          amount: data.razorpay.amount,
+          currency: data.razorpay.currency,
+          order_id: data.razorpay.orderId,
+          name: brand.name,
+          description: `Order ${data.orderNumber}`,
+          prefill: {
+            name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+            email: form.email,
+            contact: form.phone,
+          },
+          theme: { color: "#FA6817" },
+        },
+        () =>
+          setError(
+            "That payment attempt failed. Retry in Razorpay, or close the window to return to your bag.",
+          ),
+      );
+      received = { result, orderNumber: data.orderNumber };
+      setPending(received);
+      try {
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify(received));
+      } catch {
+        /* optional persistence */
+      }
+      await verify(received);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Checkout could not be completed.",
+      );
+      setState(received ? "pending" : "error");
+    } finally {
+      busy.current = false;
+    }
+  }
+
+  if (pending && state !== "done")
+    return (
+      <div className="mx-auto max-w-xl rounded border border-line bg-bone p-8 text-center">
+        <h1 className="font-display text-2xl">Confirming your payment</h1>
+        <p className="mt-3 text-muted">
+          If your account was debited, do not pay again. We are checking payment
+          for order <strong>{pending.orderNumber}</strong>. Payment
+          notifications can take a little time.
+        </p>
+        {error && (
+          <p role="alert" className="mt-4 text-sm text-error">
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={state === "loading"}
+          onClick={retryVerification}
+          className="mt-6 rounded-full bg-kalam px-6 py-3 text-sm text-bone disabled:opacity-50"
+        >
+          {state === "loading" ? "Verifying…" : "Check payment again"}
+        </button>
+        <Link
+          href={`/track?reference=${pending.orderNumber}`}
+          className="mt-5 block text-sm underline"
+        >
+          Track this order
+        </Link>
+      </div>
+    );
 
   if (state === "done" && placed) {
     return (
@@ -92,7 +253,7 @@ export function CheckoutForm() {
           <Check className="h-6 w-6 text-success" strokeWidth={2.2} />
         </motion.span>
         <h1 className="mt-6 font-display text-[1.8rem] font-semibold tracking-[-0.035em]">
-          Order confirmed
+          {placed.testMode ? "Test checkout complete" : "Order confirmed"}
         </h1>
         <p className="mt-3 text-[0.95rem] leading-relaxed text-muted">
           {placed.message}
@@ -101,8 +262,10 @@ export function CheckoutForm() {
           {placed.orderNumber}
         </p>
         <p className="mt-4 text-[0.85rem] text-muted">
-          A confirmation is on its way to {form.email}. Keep the order number
-          handy — you can use it to track the print.
+          Keep this order number for your records.{" "}
+          {placed.testMode
+            ? "This was a test checkout, not a real purchase."
+            : "You can use it to check your order status."}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
@@ -145,26 +308,59 @@ export function CheckoutForm() {
     <form
       onSubmit={onSubmit}
       className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20"
-      noValidate
     >
       <div>
         <h1 className="font-display text-[clamp(1.9rem,4.6vw,3rem)] font-semibold tracking-[-0.045em]">
           Delivery details
         </h1>
 
-        <div className="mt-9 grid gap-5 sm:grid-cols-2">
-          <Field label="Full name" htmlFor="fullName" className="sm:col-span-2">
+        {testMode && (
+          <p
+            role="status"
+            className="mt-5 rounded border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            Test checkout — payments are simulated. No real print or shipping
+            order will be placed.
+          </p>
+        )}
+        {!onlineEnabled && (
+          <p className="mt-4 text-sm text-muted">
+            Online payments are not configured yet. Please check back shortly.
+          </p>
+        )}
+        <fieldset
+          disabled={state === "loading"}
+          className="mt-9 grid gap-5 sm:grid-cols-2"
+        >
+          <Field label="First name" htmlFor="firstName">
             <input
-              id="fullName"
-              value={form.fullName}
-              onChange={update("fullName")}
+              id="firstName"
+              name="firstName"
+              value={form.firstName}
+              onChange={update("firstName")}
               required
-              autoComplete="name"
+              maxLength={50}
+              pattern=".*\S.*"
+              autoComplete="given-name"
               className="input-base"
-              placeholder="Your name"
+              placeholder="First name"
             />
           </Field>
-          <Field label="Email" htmlFor="email">
+          <Field label="Last name" htmlFor="lastName">
+            <input
+              id="lastName"
+              name="lastName"
+              value={form.lastName}
+              onChange={update("lastName")}
+              required
+              maxLength={49}
+              pattern=".*\S.*"
+              autoComplete="family-name"
+              className="input-base"
+              placeholder="Last name"
+            />
+          </Field>
+          <Field label="Contact email" htmlFor="email">
             <input
               id="email"
               type="email"
@@ -176,22 +372,33 @@ export function CheckoutForm() {
               placeholder="you@email.com"
             />
           </Field>
-          <Field label="Phone" htmlFor="phone">
+          <Field label="Contact number (10 digits)" htmlFor="phone">
             <input
               id="phone"
+              type="tel"
               value={form.phone}
               onChange={update("phone")}
               required
-              autoComplete="tel"
+              autoComplete="tel-national"
+              inputMode="numeric"
+              minLength={10}
+              maxLength={10}
+              pattern="[6-9][0-9]{9}"
+              title="Enter your 10-digit Indian mobile number without +91."
               className="input-base"
-              placeholder="+91 98765 43210"
+              placeholder="9876543210"
             />
           </Field>
-          <Field label="Address line 1" htmlFor="address1" className="sm:col-span-2">
+          <Field
+            label="Shipping address"
+            htmlFor="address1"
+            className="sm:col-span-2"
+          >
             <input
               id="address1"
               value={form.address1}
               onChange={update("address1")}
+              maxLength={90}
               required
               autoComplete="address-line1"
               className="input-base"
@@ -199,7 +406,7 @@ export function CheckoutForm() {
             />
           </Field>
           <Field
-            label="Address line 2"
+            label="Shipping address 2"
             htmlFor="address2"
             className="sm:col-span-2"
             optional
@@ -208,9 +415,10 @@ export function CheckoutForm() {
               id="address2"
               value={form.address2}
               onChange={update("address2")}
+              maxLength={90}
               autoComplete="address-line2"
               className="input-base"
-              placeholder="Landmark, city"
+              placeholder="Landmark or additional address details"
             />
           </Field>
           <Field label="City" htmlFor="city">
@@ -235,9 +443,11 @@ export function CheckoutForm() {
               placeholder="Telangana"
             />
           </Field>
-          <Field label="PIN / ZIP" htmlFor="zip">
+          <Field label="Shipping PIN code" htmlFor="zip">
             <input
               id="zip"
+              maxLength={6}
+              pattern="[1-9][0-9]{5}"
               value={form.zip}
               onChange={update("zip")}
               required
@@ -255,57 +465,21 @@ export function CheckoutForm() {
               className="input-base cursor-pointer"
             >
               <option value="IN">India</option>
-              <option value="US">United States</option>
             </select>
           </Field>
-        </div>
+        </fieldset>
 
         <h2 className="mt-12 font-display text-[1.4rem] font-semibold tracking-[-0.035em]">
           Payment
         </h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {[
-            {
-              key: "Prepaid" as const,
-              title: "Prepaid",
-              note: "Pay now by card, UPI or net banking.",
-            },
-            {
-              key: "COD" as const,
-              title: "Cash on delivery",
-              note: "Pay the courier when it reaches you.",
-            },
-          ].map((option) => (
-            <label
-              key={option.key}
-              className={`flex cursor-pointer items-start gap-3 rounded-[3px] border p-5 transition-colors ${
-                payment === option.key
-                  ? "border-kalam bg-kalam/4"
-                  : "border-line hover:border-graphite/30"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value={option.key}
-                checked={payment === option.key}
-                onChange={() => setPayment(option.key)}
-                className="mt-1 h-4 w-4 accent-[#0B0B10]"
-              />
-              <span>
-                <span className="block text-[0.95rem] font-medium">
-                  {option.title}
-                </span>
-                <span className="mt-1 block text-[0.85rem] text-muted">
-                  {option.note}
-                </span>
-              </span>
-            </label>
-          ))}
-        </div>
+        <p className="mt-5 rounded-[3px] border border-line p-5 text-sm text-muted">
+          Pay online by card, UPI or net banking through Razorpay.
+        </p>
 
-        {state === "error" && (
-          <p className="mt-6 text-[0.88rem] text-error">{error}</p>
+        {error && (
+          <p role="alert" className="mt-6 text-[0.88rem] text-error">
+            {error}
+          </p>
         )}
       </div>
 
@@ -361,26 +535,25 @@ export function CheckoutForm() {
 
           <button
             type="submit"
-            disabled={state === "loading"}
+            disabled={state === "loading" || !onlineEnabled}
             className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-full bg-kalam py-4 text-[0.76rem] font-medium uppercase tracking-[0.18em] text-bone transition-transform hover:scale-[1.01] disabled:opacity-60"
           >
             {state === "loading" ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-                Placing order
+                Processing payment…
               </>
             ) : (
               <>
                 <Lock className="h-4 w-4" strokeWidth={1.8} />
-                Place order · {formatINR(total)}
+                Pay securely · {formatINR(total)}
               </>
             )}
           </button>
 
           <p className="mt-4 text-center text-[0.76rem] leading-relaxed text-muted">
-            Printed on demand in India and dispatched within about three
-            working days. You will get a confirmation email with your order
-            number.
+            Secure payments powered by Razorpay. Your order is confirmed only
+            after payment verification.
           </p>
         </div>
       </aside>

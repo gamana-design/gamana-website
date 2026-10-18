@@ -1,3 +1,5 @@
+import { BRAND_NAME } from "./brand-name";
+
 /**
  * GAMANA — brand system.
  *
@@ -12,15 +14,15 @@
  */
 
 export const brand = {
-  name: "GAMANA",
+  name: BRAND_NAME,
   nameTelugu: "గమన",
   owner: "Sri Sai Shivani Kaligotla",
   tagline: "What Grounds You. Moves You.",
   campaign: "Rooted in origin, made to move.",
   oneLiner:
-    "GAMANA creates casual and performance apparel for movement, style, and everyday life.",
+    "గMANA creates casual and performance apparel for movement, style, and everyday life.",
   description:
-    "GAMANA creates culture-inspired streetwear and performance apparel rooted in identity, designed for everyday movement.",
+    "గMANA creates culture-inspired streetwear and performance apparel rooted in identity, designed for everyday movement.",
   category: "Casual & Performance Apparel",
   founded: "2026",
   base: "Hyderabad, India",
@@ -104,7 +106,7 @@ export const voice = {
 } as const;
 
 export const boilerplate =
-  "GAMANA is a contemporary apparel brand built around movement, discipline, and personal style. Bringing together URBAN and CORE, the brand blends everyday fashion with performance-inspired design. From relaxed daily wear to active essentials, GAMANA creates versatile pieces that move effortlessly across different parts of life. Two lines. One mindset. From gym to street.";
+  "గMANA is a contemporary apparel brand built around movement, discipline, and personal style. Bringing together URBAN and CORE, the brand blends everyday fashion with performance-inspired design. From relaxed daily wear to active essentials, GAMANA creates versatile pieces that move effortlessly across different parts of life. Two lines. One mindset. From gym to street.";
 
 export const nav = [
   { label: "Shop", href: "/shop" },

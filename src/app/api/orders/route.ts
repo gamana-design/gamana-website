@@ -1,241 +1,187 @@
-import { getStoreProducts } from "@/lib/homepage-store";
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-
+import { getStoreProducts } from "@/lib/homepage-store";
 import { resolveSku } from "@/data/catalog";
-import { buildOrderNumber, createOrder, isConfigured } from "@/lib/qikink";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import {
+  CheckoutError,
+  priceCart,
+  validateCustomer,
+  validatePayment,
+} from "@/lib/checkout/pricing";
+import { checkoutError } from "@/lib/checkout/http";
+import {
+  razorpayConfig,
+  razorpayRequest,
+  type RazorpayOrder,
+} from "@/lib/checkout/razorpay";
+import { fulfilOrder } from "@/lib/checkout/fulfilment";
+import { newOrderReference } from "@/lib/checkout/references";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-interface IncomingItem {
-  productSlug: string;
-  size?: string;
-  color?: string;
-  quantity?: number;
-}
-
-interface IncomingCustomer {
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  address1?: string;
-  address2?: string;
-  city?: string;
-  province?: string;
-  zip?: string;
-  countryCode?: string;
-}
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_RE = /^[0-9+\-\s()]{8,18}$/;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  let body: {
-    items?: IncomingItem[];
-    customer?: IncomingCustomer;
-    payment?: "Prepaid" | "COD";
-  };
-
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
-
-  const customer = body.customer ?? {};
-  const payment = body.payment === "COD" ? "COD" : "Prepaid";
-  const items = Array.isArray(body.items) ? body.items : [];
-
-  /* — validation —————————————————————————————————————————————— */
-
-  if (!items.length) {
-    return NextResponse.json({ error: "Your bag is empty." }, { status: 400 });
-  }
-  if (!customer.fullName?.trim()) {
-    return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
-  }
-  if (!EMAIL_RE.test(customer.email?.trim() ?? "")) {
-    return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 400 },
-    );
-  }
-  if (!PHONE_RE.test(customer.phone?.trim() ?? "")) {
-    return NextResponse.json(
-      { error: "Please enter a valid phone number." },
-      { status: 400 },
-    );
-  }
-  if (!customer.address1?.trim() || !customer.city?.trim()) {
-    return NextResponse.json(
-      { error: "Please enter your delivery address." },
-      { status: 400 },
-    );
-  }
-  if (!customer.province?.trim() || !customer.zip?.trim()) {
-    return NextResponse.json(
-      { error: "Please enter your state and PIN code." },
-      { status: 400 },
-    );
-  }
-
-  /* — resolve lines against the server catalogue ——————————————— */
-
-  const catalogue = await getStoreProducts();
-  const lines = items
-    .map((item) => {
-      const product = catalogue.find((p) => p.slug === item.productSlug);
-      if (!product) return null;
-      const variant = product.variants.find(
-        (v) =>
-          (item.size ? v.size === item.size : true) &&
-          (item.color ? v.color === item.color : true),
-      );
-      if (!variant) return null;
-      const quantity = Math.max(
-        1,
-        Math.min(10, Math.floor(Number(item.quantity) || 1)),
-      );
-      return {
-        product,
-        variant,
-        quantity,
-        sku: resolveSku(product.slug, variant.sku),
-        unitPrice: product.price,
-      };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null);
-
-  if (!lines.length) {
-    return NextResponse.json(
-      { error: "None of those items are available." },
-      { status: 400 },
-    );
-  }
-
-  const total = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-  const orderNumber = buildOrderNumber("gm");
-
-  const [firstName, ...restName] = customer.fullName!.trim().split(/\s+/);
-  const lastName = restName.join(" ") || "Customer";
-
-  /* — persist ————————————————————————————————————————————————— */
-
-  const supabase = getSupabaseAdmin();
-  let orderRowId: string | null = null;
-
-  if (supabase) {
-    const { data: orderRow, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        order_number: orderNumber,
-        email: customer.email!.trim(),
-        full_name: customer.fullName!.trim(),
-        phone: customer.phone!.trim(),
-        address1: customer.address1!.trim().slice(0, 90),
-        address2: (customer.address2 ?? "").trim() || null,
-        city: customer.city!.trim(),
-        province: customer.province!.trim(),
-        zip: customer.zip!.trim(),
-        country_code: (customer.countryCode ?? "IN").trim().toUpperCase(),
-        payment_gateway: payment,
-        total_order_value: total,
-        status: "placed",
-      })
-      .select("id")
-      .single();
-
-    if (orderError) {
-      return NextResponse.json(
-        { error: "Could not start the order. Try again shortly." },
-        { status: 500 },
-      );
-    }
-    orderRowId = orderRow?.id ?? null;
-
-    await supabase.from("order_items").insert(
-      lines.map((l) => ({
-        order_id: orderRowId,
-        product_id: l.product.id,
-        product_slug: l.product.slug,
-        product_name: l.product.name,
-        line: l.product.line,
-        sku: l.sku,
-        size: l.variant.size,
-        color: l.variant.color,
-        quantity: l.quantity,
-        unit_price: l.unitPrice,
-      })),
-    );
-  }
-
-  /* — push to Qikink for printing and shipping ———————————————— */
-
-  let fulfilment: "qikink" | "pending" = "pending";
-  let fulfilmentMessage =
-    "Order received. We are confirming your order and will email you shortly.";
-
-  if (isConfigured()) {
-    const result = await createOrder({
-      order_number: orderNumber,
-      qikink_shipping: 1,
-      gateway: payment,
-      total_order_value: String(total),
-      line_items: lines.map((l) => ({
-        // The SKU already exists in the Qikink account's My Products, so the
-        // design is resolved from there.
-        search_from_my_products: 1,
-        quantity: String(l.quantity),
-        sku: l.sku,
-        price: String(l.unitPrice),
-      })),
-      shipping_address: {
-        first_name: firstName,
-        last_name: lastName,
-        address1: customer.address1!.trim().slice(0, 90),
-        address2: (customer.address2 ?? "").trim(),
-        phone: customer.phone!.trim(),
-        email: customer.email!.trim(),
-        city: customer.city!.trim(),
-        zip: customer.zip!.trim(),
-        province: customer.province!.trim(),
-        country_code: (customer.countryCode ?? "IN").trim().toUpperCase(),
-      },
+    const body = await request.json().catch(() => {
+      throw new CheckoutError("Invalid checkout request.");
     });
-
-    if (result.ok) {
-      fulfilment = "qikink";
-      fulfilmentMessage =
-        "Order confirmed. Your pieces are being printed and will ship in about three days.";
-    }
-
-    if (supabase && orderRowId) {
-      await supabase
-        .from("orders")
-        .update({
-          status: result.ok ? "confirmed" : "fulfilment-pending",
-          qikink_order_id: result.orderId ?? null,
-          qikink_reference: orderNumber,
-          qikink_status: result.ok ? "Live" : (result.error ?? "error"),
-        })
-        .eq("id", orderRowId);
-    }
-
-    if (!result.ok) {
-      console.error("Qikink order error:", result.error);
-    }
-  } else if (supabase && orderRowId) {
-    await supabase
+    if (!body || typeof body !== "object")
+      throw new CheckoutError("Invalid checkout request.");
+    const payment = validatePayment(body.payment);
+    if (
+      typeof body.checkoutKey !== "string" ||
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
+        body.checkoutKey,
+      )
+    )
+      throw new CheckoutError(
+        "Invalid checkout session. Please refresh and retry.",
+      );
+    const customer = validateCustomer(body.customer);
+    const quote = priceCart(body.items, await getStoreProducts());
+    if (body.expectedAmount !== quote.amount)
+      throw new CheckoutError(
+        "Your bag prices have changed. Please refresh your bag before paying.",
+        409,
+      );
+    const mode = process.env.RAZORPAY_MODE ?? "test";
+    if (mode !== "live" && mode !== "test")
+      throw new CheckoutError("Checkout is not configured.", 503);
+    const config = razorpayConfig();
+    if (!process.env.RAZORPAY_WEBHOOK_SECRET)
+      throw new CheckoutError(
+        "Online payments are not configured yet. Please try again later.",
+        503,
+      );
+    const db = getSupabaseAdmin();
+    if (!db)
+      throw new CheckoutError("Checkout is temporarily unavailable.", 503);
+    const itemRows = quote.lines.map((l) => ({
+      product_id: l.product.id,
+      product_slug: l.product.slug,
+      product_name: l.product.name,
+      line: l.product.line,
+      sku: resolveSku(l.product.slug, l.variant.sku),
+      size: l.variant.size,
+      color: l.variant.color,
+      quantity: l.quantity,
+      unit_price: l.unitAmount / 100,
+    }));
+    const fingerprint = createHash("sha256")
+      .update(
+        JSON.stringify({
+          customer,
+          payment,
+          mode,
+          items: itemRows,
+          amount: quote.amount,
+        }),
+      )
+      .digest("hex");
+    const created = await db.rpc("gamana_create_checkout", {
+      p_order: {
+        checkout_key: body.checkoutKey,
+        request_fingerprint: fingerprint,
+        order_number: newOrderReference(),
+        email: customer.email,
+        full_name: customer.fullName,
+        phone: customer.phone,
+        address1: customer.address1,
+        address2: customer.address2,
+        city: customer.city,
+        province: customer.province,
+        zip: customer.zip,
+        payment_gateway: payment,
+        payment_mode: mode,
+        amount_paise: quote.amount,
+        subtotal_paise: quote.subtotal,
+        shipping_paise: quote.shipping,
+      },
+      p_items: itemRows,
+    });
+    if (created.error || !created.data)
+      throw new CheckoutError(
+        "Could not start this order. Please retry with the same checkout details, or refresh if you changed your bag.",
+        503,
+      );
+    const read = await db
       .from("orders")
-      .update({ status: "awaiting-fulfilment-config" })
-      .eq("id", orderRowId);
+      .select("*")
+      .eq("id", created.data)
+      .single();
+    if (read.error) throw read.error;
+    const order = read.data;
+    if (order.payment_status === "paid") {
+      try {
+        await fulfilOrder(order.id);
+      } catch {
+        console.error("Paid order awaiting fulfilment", order.order_number);
+      }
+    }
+    if (!order.razorpay_order_id) {
+      // Only one concurrent request can create/link a gateway order for this checkout.
+      const claim = await db
+        .from("orders")
+        .update({ status: "payment-creating" })
+        .eq("id", order.id)
+        .eq("status", "payment-pending")
+        .is("razorpay_order_id", null)
+        .select("id")
+        .maybeSingle();
+      if (claim.error) throw claim.error;
+      if (!claim.data)
+        throw new CheckoutError(
+          "Your checkout is being prepared. Retry in a moment with the same details.",
+          409,
+        );
+      let gateway: RazorpayOrder;
+      try {
+        gateway = await razorpayRequest<RazorpayOrder>("orders", {
+          amount: order.amount_paise,
+          currency: "INR",
+          receipt: order.order_number,
+          partial_payment: false,
+        });
+        if (
+          !/^order_[a-zA-Z0-9]+$/.test(gateway.id) ||
+          gateway.amount !== order.amount_paise ||
+          gateway.currency !== "INR"
+        )
+          throw new Error("Invalid provider order response.");
+      } catch (error) {
+        // No gateway order has been returned to a payer yet; an unused remote order is safe.
+        await db
+          .from("orders")
+          .update({ status: "payment-pending" })
+          .eq("id", order.id)
+          .is("razorpay_order_id", null);
+        throw error;
+      }
+      const linked = await db
+        .from("orders")
+        .update({ razorpay_order_id: gateway.id, status: "payment-pending" })
+        .eq("id", order.id)
+        .is("razorpay_order_id", null);
+      if (linked.error) throw linked.error;
+      order.razorpay_order_id = gateway.id;
+    }
+    return NextResponse.json(
+      {
+        orderNumber: order.order_number,
+        paid: order.payment_status === "paid",
+        testMode: mode === "test",
+        razorpay: {
+          keyId: config.keyId,
+          orderId: order.razorpay_order_id,
+          amount: order.amount_paise,
+          currency: "INR",
+        },
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return checkoutError(error);
   }
-
-  return NextResponse.json({
-    orderNumber,
-    total,
-    fulfilment,
-    message: fulfilmentMessage,
-  });
 }

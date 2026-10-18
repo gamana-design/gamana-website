@@ -1,8 +1,10 @@
 "use client";
+import { BrandText } from "@/components/brand-name";
 
 import { motion } from "framer-motion";
 import { Check, Minus, Plus, ShoppingBag, Truck } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 import { useCart } from "@/lib/cart";
 import type { Product } from "@/data/catalog";
@@ -37,10 +39,10 @@ export function ProductDetail({ product }: { product: Product }) {
   const accent = product.line === "URBAN" ? "bg-ember" : "bg-neelam";
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+    <div className="product-detail-shell grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
       {/* Gallery */}
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[3px] bg-bone-deep">
+        <div className="product-gallery-frame relative aspect-[4/5] overflow-hidden rounded-[3px] bg-bone-deep">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={product.gallery[frame]}
@@ -79,7 +81,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 aria-label={`Show view ${i + 1}`}
                 aria-current={i === frame}
                 className={cn(
-                  "aspect-[4/5] overflow-hidden rounded-[2px] bg-bone-deep transition-all",
+                  "gallery-thumb aspect-[4/5] overflow-hidden rounded-[2px] bg-bone-deep transition-all",
                   i === frame
                     ? "ring-2 ring-kalam ring-offset-2 ring-offset-bone"
                     : "opacity-70 hover:opacity-100",
@@ -99,12 +101,12 @@ export function ProductDetail({ product }: { product: Product }) {
       </div>
 
       {/* Info */}
-      <div>
+      <div className="product-detail-info">
         <p className="label text-muted">
           {product.line} · {product.category}
         </p>
         <h1 className="mt-4 font-display text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[0.98] tracking-[-0.045em]">
-          {product.name}
+          <BrandText>{product.name}</BrandText>
         </h1>
 
         <div className="mt-5 flex items-baseline gap-3">
@@ -120,19 +122,16 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
 
         <p className="mt-6 text-pretty text-[0.98rem] leading-relaxed text-graphite/80">
-          {product.description}
+          <BrandText>{product.description}</BrandText>
         </p>
 
         {/* Size */}
         <div className="mt-9">
           <div className="flex items-center justify-between">
             <p className="label text-muted">Size</p>
-            <button
-              type="button"
-              className="link-underline text-[0.78rem] text-muted hover:text-graphite"
-            >
-              Size guide
-            </button>
+            <Link href="/contact" className="link-underline text-[0.78rem] text-muted hover:text-graphite">
+              Sizing help ↗
+            </Link>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {product.variants.map((variant) => {
@@ -169,7 +168,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
         {/* Quantity + add */}
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-          <div className="flex items-center justify-between rounded-full border border-line px-4 sm:w-36">
+          <div className="product-quantity flex items-center justify-between rounded-full border border-line px-4 sm:w-36">
             <button
               type="button"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -221,7 +220,7 @@ export function ProductDetail({ product }: { product: Product }) {
             </p>
             <p className="mt-1.5 text-[0.82rem] leading-relaxed text-muted">
               Your piece is printed and packed after you order, then shipped
-              across {["India", "USA"].join(" and ")}. Free shipping over ₹1,499.
+              across India. Free shipping on orders ₹1,499 and above.
             </p>
           </div>
         </div>
@@ -233,13 +232,13 @@ export function ProductDetail({ product }: { product: Product }) {
               {product.details.map((d) => (
                 <li key={d} className="flex gap-2.5">
                   <span className="mt-[0.55rem] h-1 w-1 shrink-0 rounded-full bg-ember" />
-                  {d}
+                  <BrandText>{d}</BrandText>
                 </li>
               ))}
             </ul>
           </DetailBlock>
           <DetailBlock title="Why it exists">
-            <p>{product.blurb}</p>
+            <p><BrandText>{product.blurb}</BrandText></p>
           </DetailBlock>
           <DetailBlock title="Shipping & returns">
             <p>

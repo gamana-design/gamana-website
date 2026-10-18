@@ -50,7 +50,7 @@ export default async function ProductPage({
 
   return (
     <>
-      <div className="container-gamana pt-6">
+      <div className="product-page-breadcrumb container-gamana pt-6">
         <nav aria-label="Breadcrumb" className="label flex items-center gap-2 text-muted">
           <Link href="/" className="hover:text-graphite">
             Home
