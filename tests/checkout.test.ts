@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { legacyProducts } from "../src/data/legacy-site-content";
-import { priceCart, validateCustomer } from "../src/lib/checkout/pricing";
+import { priceCart, validateCustomer, validatePayment } from "../src/lib/checkout/pricing";
 import { paymentMatches, validSignature } from "../src/lib/checkout/signatures";
 import type { Product } from "../src/data/catalog";
 
@@ -26,6 +26,12 @@ const customer = {
   zip: "500001",
   countryCode: "IN",
 };
+
+test("checkout only accepts online payment and rejects COD or missing methods", () => {
+  assert.equal(validatePayment("Prepaid"), "Prepaid");
+  for (const value of ["COD", "cod", "Cash on delivery", "", null, undefined, {}, 1])
+    assert.throws(() => validatePayment(value), /Cash on delivery is not available/);
+});
 
 test("shipping is included in server-side totals, in integer paise", () => {
   const quote = priceCart(items, [product]);

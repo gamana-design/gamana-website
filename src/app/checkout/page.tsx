@@ -24,7 +24,6 @@ export default async function CheckoutPage() {
         <div className="container-gamana">
           <CheckoutForm
             testMode={process.env.RAZORPAY_MODE !== "live"}
-            codEnabled={process.env.CHECKOUT_COD_ENABLED !== "false"}
             onlineEnabled={onlineEnabled}
           />
         </div>

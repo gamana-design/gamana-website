@@ -7,6 +7,7 @@ import {
   CheckoutError,
   priceCart,
   validateCustomer,
+  validatePayment,
 } from "@/lib/checkout/pricing";
 import { checkoutError } from "@/lib/checkout/http";
 import {
@@ -28,10 +29,7 @@ export async function POST(request: Request) {
     });
     if (!body || typeof body !== "object")
       throw new CheckoutError("Invalid checkout request.");
-    if (body.payment !== "COD" && body.payment !== "Prepaid")
-      throw new CheckoutError("Please select a payment method.");
-    if (body.payment === "COD" && process.env.CHECKOUT_COD_ENABLED === "false")
-      throw new CheckoutError("Cash on delivery is not available.");
+    const payment = validatePayment(body.payment);
     if (
       typeof body.checkoutKey !== "string" ||
       !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
@@ -51,8 +49,8 @@ export async function POST(request: Request) {
     const mode = process.env.RAZORPAY_MODE ?? "test";
     if (mode !== "live" && mode !== "test")
       throw new CheckoutError("Checkout is not configured.", 503);
-    const config = body.payment === "Prepaid" ? razorpayConfig() : null;
-    if (config && !process.env.RAZORPAY_WEBHOOK_SECRET)
+    const config = razorpayConfig();
+    if (!process.env.RAZORPAY_WEBHOOK_SECRET)
       throw new CheckoutError(
         "Online payments are not configured yet. Please try again later.",
         503,
@@ -75,7 +73,7 @@ export async function POST(request: Request) {
       .update(
         JSON.stringify({
           customer,
-          payment: body.payment,
+          payment,
           mode,
           items: itemRows,
           amount: quote.amount,
@@ -95,7 +93,7 @@ export async function POST(request: Request) {
         city: customer.city,
         province: customer.province,
         zip: customer.zip,
-        payment_gateway: body.payment,
+        payment_gateway: payment,
         payment_mode: mode,
         amount_paise: quote.amount,
         subtotal_paise: quote.subtotal,
@@ -115,20 +113,6 @@ export async function POST(request: Request) {
       .single();
     if (read.error) throw read.error;
     const order = read.data;
-    if (body.payment === "COD") {
-      await fulfilOrder(order.id);
-      return NextResponse.json(
-        {
-          orderNumber: order.order_number,
-          testMode: mode === "test",
-          message:
-            mode === "test"
-              ? "Test order received. No real print order has been placed."
-              : "Cash-on-delivery order received. Your order is awaiting fulfilment.",
-        },
-        { headers: { "Cache-Control": "no-store" } },
-      );
-    }
     if (order.payment_status === "paid") {
       try {
         await fulfilOrder(order.id);
@@ -189,7 +173,7 @@ export async function POST(request: Request) {
         paid: order.payment_status === "paid",
         testMode: mode === "test",
         razorpay: {
-          keyId: config!.keyId,
+          keyId: config.keyId,
           orderId: order.razorpay_order_id,
           amount: order.amount_paise,
           currency: "INR",

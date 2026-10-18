@@ -36,7 +36,6 @@ RAZORPAY_TEST_KEY_SECRET=<the matching Test Mode Key Secret>
 RAZORPAY_LIVE_KEY_ID=
 RAZORPAY_LIVE_KEY_SECRET=
 RAZORPAY_WEBHOOK_SECRET=<a separate strong random secret you choose>
-CHECKOUT_COD_ENABLED=true
 ```
 
 Test credentials and `RAZORPAY_MODE=test` can be configured for Production,
@@ -52,7 +51,7 @@ Redeploy after adding or changing environment variables.
 
 Only the test pair is read in the default `test` mode; any incorrectly prefixed key is rejected. Do not set the mode to
 `live` until the integration and fulfilment configuration have been tested.
-Both simulated prepaid and COD test orders are stored for testing but **never
+Simulated online-payment test orders are stored for testing but **never
 submitted to Qikink**, even if Qikink has live credentials.
 
 ## Razorpay webhook and capture settings
@@ -80,7 +79,9 @@ The provider's HMAC authenticates the webhook's original raw body.
   claim is introduced. Confirm your tax policy before going live.
 - ₹79 shipping below ₹1,499, free shipping at or above ₹1,499. Both browser and
   server use the same thresholds; the charged amount includes shipping.
-- COD remains available unless `CHECKOUT_COD_ENABLED=false`.
+- Online payments only. Cash on delivery is not currently accepted. The order
+  endpoint rejects COD requests even from an old checkout page; the former
+  `CHECKOUT_COD_ENABLED` setting no longer enables it.
 - Cart prices, product availability, exact variants and quantity limits are
   revalidated server-side. Unavailable lines are rejected, not silently dropped.
 - A pending local order and item snapshots are committed together before
@@ -100,8 +101,9 @@ The provider's HMAC authenticates the webhook's original raw body.
 
 ## Fulfilment safety and operational checks
 
-In live mode, a paid prepaid order (or accepted COD order) can be submitted to
-Qikink. SKUs must actually exist in the linked Qikink **My Products** account;
+In live mode, a paid prepaid order can be submitted to Qikink. Existing COD
+records remain compatible with historical tracking/fulfilment, but new COD orders
+are not accepted. SKUs must actually exist in the linked Qikink **My Products** account;
 starter SKU examples are not proof that those products/designs are configured.
 Confirm this before accepting real orders.
 
@@ -143,7 +145,7 @@ With Test Mode configured, test end-to-end in Razorpay's hosted checkout:
 - Close the browser after payment; confirm the webhook marks the order paid.
 - Replay a captured webhook; verify no duplicate order/items/fulfilment.
 - Tampered signature/amount/order, stale prices and out-of-stock items.
-- Both sides of the shipping threshold, COD enabled/disabled.
+- Both sides of the shipping threshold; COD requests are rejected before order creation.
 - Confirm test orders have `payment_mode='test'`, `fulfilment_status='test'`, and
   no Qikink order ID. No real dispatch should be created.
 

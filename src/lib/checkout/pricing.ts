@@ -21,6 +21,13 @@ export class CheckoutError extends Error {
     super(message);
   }
 }
+/** Store policy: new orders must be paid online, regardless of old COD settings. */
+export function validatePayment(value: unknown): "Prepaid" {
+  if (value !== "Prepaid")
+    throw new CheckoutError("Please pay online. Cash on delivery is not available.");
+  return value;
+}
+
 const text = (value: unknown, max: number) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
 

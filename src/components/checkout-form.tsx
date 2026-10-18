@@ -31,11 +31,9 @@ async function postJSON(url: string, body: unknown) {
 
 export function CheckoutForm({
   testMode = true,
-  codEnabled = true,
   onlineEnabled = false,
 }: {
   testMode?: boolean;
-  codEnabled?: boolean;
   onlineEnabled?: boolean;
 }) {
   const { lines, subtotal, clear, count } = useCart();
@@ -51,7 +49,6 @@ export function CheckoutForm({
     zip: "",
     countryCode: "IN",
   });
-  const [payment, setPayment] = useState<"Prepaid" | "COD">("Prepaid");
   const [state, setState] = useState<
     "idle" | "loading" | "done" | "error" | "pending"
   >("idle");
@@ -141,7 +138,7 @@ export function CheckoutForm({
           quantity: l.quantity,
         })),
         customer: form,
-        payment,
+        payment: "Prepaid",
         expectedAmount: Math.round(total * 100),
       };
       const fingerprint = JSON.stringify(payload);
@@ -161,10 +158,6 @@ export function CheckoutForm({
         /* server still validates every request */
       }
       const data = await postJSON("/api/orders", { ...payload, checkoutKey });
-      if (payment === "COD") {
-        finish(data);
-        return;
-      }
       if (data.paid) {
         // A previous callback/webhook already confirmed this exact checkout.
         finish({
@@ -478,64 +471,9 @@ export function CheckoutForm({
         <h2 className="mt-12 font-display text-[1.4rem] font-semibold tracking-[-0.035em]">
           Payment
         </h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {[
-            {
-              key: "Prepaid" as const,
-              title: "Prepaid",
-              note: "Pay now by card, UPI or net banking.",
-            },
-            {
-              key: "COD" as const,
-              title: "Cash on delivery",
-              note: "Pay the courier when it reaches you.",
-            },
-          ]
-            .filter((option) => option.key !== "COD" || codEnabled)
-            .map((option) => (
-              <label
-                key={option.key}
-                className={`flex cursor-pointer items-start gap-3 rounded-[3px] border p-5 transition-colors ${
-                  payment === option.key
-                    ? "border-kalam bg-kalam/4"
-                    : "border-line hover:border-graphite/30"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value={option.key}
-                  checked={payment === option.key}
-                  disabled={
-                    state === "loading" ||
-                    (option.key === "Prepaid" && !onlineEnabled)
-                  }
-                  onChange={() => setPayment(option.key)}
-                  className="mt-1 h-4 w-4 accent-[#0B0B10]"
-                />
-                <span>
-                  <span className="block text-[0.95rem] font-medium">
-                    {option.title}
-                  </span>
-                  <span className="mt-1 block text-[0.85rem] text-muted">
-                    {option.note}
-                  </span>
-                </span>
-              </label>
-            ))}
-        </div>
-
-        {payment === "COD" && (
-          <div className="mt-5 rounded border border-line p-4">
-            <p className="text-sm text-muted">
-              COD value — amount to pay on delivery
-            </p>
-            <p className="mt-1 font-medium tabular-nums">{formatINR(total)}</p>
-            <p className="mt-1 text-sm text-muted">
-              Calculated automatically from your order total, including shipping.
-            </p>
-          </div>
-        )}
+        <p className="mt-5 rounded-[3px] border border-line p-5 text-sm text-muted">
+          Pay online by card, UPI or net banking through Razorpay.
+        </p>
 
         {error && (
           <p role="alert" className="mt-6 text-[0.88rem] text-error">
@@ -596,32 +534,25 @@ export function CheckoutForm({
 
           <button
             type="submit"
-            disabled={
-              state === "loading" || (payment === "Prepaid" && !onlineEnabled)
-            }
+            disabled={state === "loading" || !onlineEnabled}
             className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-full bg-kalam py-4 text-[0.76rem] font-medium uppercase tracking-[0.18em] text-bone transition-transform hover:scale-[1.01] disabled:opacity-60"
           >
             {state === "loading" ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-                {payment === "Prepaid"
-                  ? "Processing payment…"
-                  : "Placing order…"}
+                Processing payment…
               </>
             ) : (
               <>
                 <Lock className="h-4 w-4" strokeWidth={1.8} />
-                {payment === "Prepaid"
-                  ? "Pay securely"
-                  : "Place COD order"} · {formatINR(total)}
+                Pay securely · {formatINR(total)}
               </>
             )}
           </button>
 
           <p className="mt-4 text-center text-[0.76rem] leading-relaxed text-muted">
-            {payment === "Prepaid"
-              ? "Secure payments powered by Razorpay. Your order is confirmed only after payment verification."
-              : "Pay on delivery. Keep your order number to track fulfilment."}
+            Secure payments powered by Razorpay. Your order is confirmed only
+            after payment verification.
           </p>
         </div>
       </aside>

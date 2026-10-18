@@ -16,6 +16,8 @@ The owner of this project is **not a developer**. Every instruction and explanat
 
 ## Payments and safety
 
+- Current store policy: online payments only. Do not re-enable cash on delivery (COD) without the owner explicitly requesting it.
+
 - Always distinguish test payments from real payments and explain whether an action can charge money or place a real printing/shipping order.
 - Do not change payment mode to live, revoke existing live credentials, change Shopify payment settings, or alter existing live webhooks without explicit permission.
 - Never ask the owner to paste API secrets, webhook secrets, passwords, or other private values into chat. Direct them to the appropriate private dashboard fields.
