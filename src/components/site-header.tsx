@@ -88,7 +88,7 @@ export function SiteHeader() {
         className={cn(
           "sticky top-0 z-50 transition-all duration-500",
           overHero
-            ? "bg-transparent text-bone"
+            ? "bg-kalam text-bone"
             : "border-b border-line bg-bone/85 text-graphite backdrop-blur-xl",
         )}
       >
