@@ -36,7 +36,7 @@ These preferences apply to future work on this project as well as the current re
 - Homepage is a drop-specific campaign takeover. Current collection: **Bay Breeze**, inspired by the Godavari, available now, airy and sun-washed. Use real product images; supporting generated scenery must not invent or alter garments.
 - Other public pages follow `docs/GAMANA-Brand-Spec.md`: Bone/Kalam Ink, Ember for URBAN, Neelam for CORE, and the existing brand typography. Campaign-only colours stay scoped to the homepage.
 - Future drops are agent-prepared and scheduled for an owner-confirmed launch time (India time by default). Do not invent dates, countdowns, scarcity, or mailing promises. No future launch is scheduled yet.
-- Admin remains product-only; do not restore a website builder or add a Drops screen. See `docs/drop-campaigns.md`.
+- Admin is limited to product management, sign-in and the requested password change; do not restore a website builder or add a Drops screen. See `docs/drop-campaigns.md`.
 
 ## Brand-name display rule (owner update)
 

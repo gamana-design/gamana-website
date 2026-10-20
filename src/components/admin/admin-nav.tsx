@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 const links = [
   ["/admin/products", "Products"],
-  ["/admin/products/new", "New product"],
+  ["/admin/products/new", "Add product"],
+  ["/admin/password", "Change password"],
 ];
 
 export function AdminNav() {
