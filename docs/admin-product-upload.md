@@ -2,20 +2,15 @@
 
 ## What the owner does
 
+The editor now follows a simpler product-page flow: **Product**, **Media**, **Variants**, then **Status** and **Organization**. Less-used supplier and print-file fields are tucked into expandable sections; existing values are preserved.
+
 1. Open **Admin → New product**.
-2. Under **Product details**, enter the product name, description and selling price in rupees. The selling price applies to every size. The page address fills itself in from the name; you can change it.
-3. Under **Qikink reference**, copy the **Product ID** from your export and the **product type / model** from Qikink. Choose the correct print method. For an all-over printed product, choose **All-over print (AOP) · 2**.
-4. Under **Sizes, colours & Qikink codes**, enter sizes separated by commas and the base colour. Copy a checked Product SKU pattern if available, using `{size}` where the size changes. Optionally enter the shared Design SKU and Qikink product cost. Click **Add sizes**. This keeps existing variations and adds only new size/colour combinations.
-5. Check each variation against Qikink's **Product Variations** table:
-   - **Product SKU**: copy from the Product SKU column.
-   - **Design SKU**: copy the complete artwork/placement string. This is not the older short design code.
-   - **Store SKU**: copy the full `v-…` value from the Store SKU column.
-   - **Qikink product cost**: your supplier cost, not your customer's selling price. This stays private in admin.
-   - **Availability**: set this yourself; it is not automatically checked with Qikink.
-   - **Confirmed order SKU**: leave this blank until Qikink confirms which identifier selects the saved printed variation. The form never guesses or copies one of the other codes here. Existing products keep their existing order SKUs.
-6. Under **Photos & mockups**, upload the cover, gallery photos and optional mockup yourself. **Add gallery photo** adds another upload slot. A separately uploaded mockup is not automatically shown to customers; add it to the cover/gallery too if needed. Files are uploaded at their original quality, up to 25 MB each; no resizing or compression is applied. Design files also accept PDF.
-7. Leave **Show in shop** off and click **Save draft** while anything is unfinished. Drafts can be saved without a photo or confirmed order codes.
-8. Once ready, add a cover photo, a selling price greater than zero, and a confirmed order SKU for every size. Turn on **Show in shop** and click **Save product**.
+2. Enter the title, description and price. The price applies to every size.
+3. In **Media**, upload a **Cover photo** and any gallery photos. A gallery image or separate mockup does not replace the cover. Images keep their original quality up to 25 MB; no resizing or compression is applied.
+4. In **Variants**, add sizes and a colour. Set availability for each size. If you need them, open **Other Qikink references and cost** to enter Product SKU, Design SKU, Store SKU and supplier cost.
+5. **Confirmed order SKU** is different: it is the exact identifier this website sends to Qikink when an order is submitted. The form will not copy Product SKU, Design SKU or Store SKU into it. Ask Qikink which value it expects for your saved variation, then enter that confirmed value for each size. Until confirmed, leave the product as a draft; do not guess.
+6. Choose **Draft** or **Active** under **Status**. To publish, the product needs a cover photo, price above ₹0 and a confirmed order SKU for every variation. The message will identify what is still missing. Otherwise keep **Draft** selected and click **Save draft**.
+7. Optional settings such as tags, mockups, Qikink product references and older print-file settings are in the expandable sections on the right.
 
 **Saving a product does not send a Qikink order, charge money, or change payment mode.** There is no real-order button on this upload form. The separate existing admin Qikink API is unchanged.
 
