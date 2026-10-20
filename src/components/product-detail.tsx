@@ -216,11 +216,11 @@ export function ProductDetail({ product }: { product: Product }) {
           <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ember" strokeWidth={1.6} />
           <div>
             <p className="text-[0.88rem] font-medium">
-              Printed on demand, dispatched in about three days
+              Free shipping across India. Always.
             </p>
             <p className="mt-1.5 text-[0.82rem] leading-relaxed text-muted">
-              Your piece is printed and packed after you order, then shipped
-              across India. Free shipping on orders ₹1,499 and above.
+              Shipping is already included in the price. Your piece is printed on demand,
+              dispatched in about three days, and shipped across India.
             </p>
           </div>
         </div>
@@ -242,8 +242,7 @@ export function ProductDetail({ product }: { product: Product }) {
           </DetailBlock>
           <DetailBlock title="Shipping & returns">
             <p>
-              Printed and dispatched in roughly three working days. Free
-              shipping over ₹1,499. Returns accepted within seven days of
+              Printed and dispatched in roughly three working days. Shipping is always free across India, included in the price. Returns accepted within seven days of
               delivery on unworn pieces with tags attached.
             </p>
           </DetailBlock>

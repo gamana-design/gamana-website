@@ -1,10 +1,11 @@
 "use client";
 
-import { Menu, ShoppingBag, X, ArrowUpRight } from "lucide-react";
+import { Menu, ShoppingBag, X, ArrowUpRight, Truck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
+import { SHIPPING_HEADLINE } from "@/lib/shipping";
 import { BrandName } from "@/components/brand-name";
 import { brand } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,7 @@ export function SiteHeader({ campaign }: { campaign: { id: string; name: string 
   const links = [{ label: "Shop all", href: "/shop" }, ...(campaign ? [{ label: campaign.name, href: `/shop?drop=${campaign.id}` }] : []), { label: "Our story", href: "/about" }, { label: "Lookbook", href: "/lookbook" }, { label: "Journal", href: "/journal" }, { label: "Contact", href: "/contact" }, { label: "Track order", href: "/track" }];
   return <>
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <div className="site-announcement"><span>Rooted in origin. Made to move.</span><span>Free shipping in India on orders ₹1,499+</span></div>
+    <div className="site-announcement"><span>Rooted in origin. Made to move.</span><span className="announcement-shipping"><Truck size={14} aria-hidden="true" />{SHIPPING_HEADLINE}</span></div>
     <header className="brand-header">
       <div className="container-gamana header-grid">
         <nav className="header-left" aria-label="Main navigation"><Link href="/shop" className={pathname === "/shop" ? "nav-active" : ""}>Shop <span className="nav-plus">+</span></Link><Link href="/about" className={pathname === "/about" ? "nav-active" : ""}>Our story</Link></nav>

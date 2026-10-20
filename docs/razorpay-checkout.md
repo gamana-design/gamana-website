@@ -77,8 +77,11 @@ The provider's HMAC authenticates the webhook's original raw body.
 - India-only delivery and INR payments.
 - Existing prices are used unchanged; no new tax calculation or tax-inclusive
   claim is introduced. Confirm your tax policy before going live.
-- ₹79 shipping below ₹1,499, free shipping at or above ₹1,499. Both browser and
-  server use the same thresholds; the charged amount includes shipping.
+- Shipping is always free across India, with no minimum spend. Delivery is
+  already included in existing product prices; do not increase them or add a
+  checkout shipping surcharge. Browser and server use `src/lib/shipping.ts`
+  (`SHIPPING_FEE = 0`); new orders store `shipping_paise = 0`. Historical order
+  snapshots, including earlier shipping amounts, remain unchanged.
 - Online payments only. Cash on delivery is not currently accepted. The order
   endpoint rejects COD requests even from an old checkout page; the former
   `CHECKOUT_COD_ENABLED` setting no longer enables it.
@@ -145,7 +148,8 @@ With Test Mode configured, test end-to-end in Razorpay's hosted checkout:
 - Close the browser after payment; confirm the webhook marks the order paid.
 - Replay a captured webhook; verify no duplicate order/items/fulfilment.
 - Tampered signature/amount/order, stale prices and out-of-stock items.
-- Both sides of the shipping threshold; COD requests are rejected before order creation.
+- Small, ordinary and multi-item carts all have zero additional shipping and
+  a total equal to the product subtotal. COD requests are rejected before order creation.
 - Confirm test orders have `payment_mode='test'`, `fulfilment_status='test'`, and
   no Qikink order ID. No real dispatch should be created.
 

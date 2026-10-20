@@ -1,3 +1,4 @@
+import { SHIPPING_HEADLINE } from "@/lib/shipping";
 import { BrandName } from "@/components/brand-name";
 import Link from "next/link";
 import { ArrowDown, ArrowRight, ArrowUpRight, Waves } from "lucide-react";
@@ -28,7 +29,7 @@ export function DropHome({ campaign: c, products }: { campaign: DropCampaign; pr
       <div className="bay-hero-content container-gamana">
         <div className="bay-hero-meta"><span className="label"><BrandName /> / Collection {c.number}</span><span className="label"><i /> Available now</span></div>
         <div className="bay-hero-type"><p className="label">{c.eyebrow}</p><h1 id="drop-title" aria-label={c.name}>{c.name.split(" ").map((word, i) => <span key={word} className={i ? "bay-title-second" : ""}>{word}</span>)}</h1><span className="bay-edition">River notes<br />Edition {c.number} / URBAN</span></div>
-        <div className="bay-hero-bottom"><div><p className="bay-headline">{c.headline}</p><p className="bay-hero-description">{c.description}</p></div><Link href="#the-drop" className="drop-button">Explore the drop <ArrowUpRight size={18} strokeWidth={1.5} /></Link></div>
+        <div className="bay-hero-bottom"><div><p className="bay-headline">{c.headline}</p><p className="bay-hero-description">{c.description}</p><p className="bay-shipping-note">{SHIPPING_HEADLINE} Included in the price.</p></div><Link href="#the-drop" className="drop-button">Explore the drop <ArrowUpRight size={18} strokeWidth={1.5} /></Link></div>
       </div>
       <div className="bay-river-label label"><Waves size={20} strokeWidth={1} /><span>Inspired by the Godavari</span><a href="#river-story" aria-label="Discover the collection story"><ArrowDown size={18} /></a></div>
     </section>

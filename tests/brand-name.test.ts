@@ -5,16 +5,19 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { BrandGlyph, BrandName, BrandText } from "../src/components/brand-name";
-import { BRAND_NAME, BRAND_INITIAL_COLOR, brandContent, brandCopy } from "../src/lib/brand-name";
+import { BRAND_NAME, BRAND_INITIAL_COLOR, BRAND_INITIAL_COLOR_ON_DARK, brandContent, brandCopy } from "../src/lib/brand-name";
 import { brand, colors } from "../src/lib/brand";
 
-test("canonical display name uses the exact Telugu/Latin spelling and primary colour", () => {
+test("canonical display name uses the exact Telugu/Latin spelling and approved accent colours", () => {
   assert.equal(brand.name, "గMANA");
   assert.equal(BRAND_NAME, brand.name);
-  assert.equal(BRAND_INITIAL_COLOR, colors.kalam);
+  assert.equal(BRAND_INITIAL_COLOR, "#C94A10");
+  assert.equal(BRAND_INITIAL_COLOR_ON_DARK, colors.ember);
   const markup = renderToStaticMarkup(createElement(BrandName));
   assert.match(markup, /aria-label="గMANA"/);
-  assert.match(markup, /class="brand-initial" lang="te" aria-hidden="true">గ/);
+  assert.match(markup, /class="brand-initial" lang="te" aria-hidden="true"><svg/);
+  assert.ok(markup.includes(BRAND_GLYPH_PATH));
+  assert.match(markup, /class="sr-only">గ/);
   assert.match(markup, /class="brand-latin" aria-hidden="true">MANA/);
   assert.doesNotMatch(markup, /GAMANA|\*\*/);
 });
@@ -48,23 +51,41 @@ test("standalone Telugu glyph is outlined, accessible and uses only existing ide
   const markup = renderToStaticMarkup(createElement(BrandGlyph));
   assert.match(markup, /aria-label="గMANA symbol — గ"/);
   assert.match(markup, /viewBox="0 0 512 512"/);
-  assert.match(markup, /<path fill="#0B0B10"/);
+  assert.match(markup, /<path fill="#C94A10"/);
   assert.doesNotMatch(markup, /<text|<image|runner|<rect/);
   const onDark = renderToStaticMarkup(createElement(BrandGlyph, { onDark: true }));
-  assert.match(onDark, /<rect width="512" height="512" fill="#F5EDDA"/);
-  assert.match(onDark, /<path fill="#0B0B10"/);
+  assert.doesNotMatch(onDark, /<rect|stroke=/);
+  assert.match(onDark, /<path fill="#F2691E"/);
 });
 
 
 test("standalone SVG matches the shared master and app icons retain the required sizes", () => {
   const svg = readFileSync("public/images/brand/ga-glyph.svg", "utf8");
   assert.ok(svg.includes(`d="${BRAND_GLYPH_PATH}"`));
-  assert.match(svg, /fill="#0B0B10"/);
+  assert.match(svg, /fill="#C94A10"/);
   assert.doesNotMatch(svg, /<text|<image|runner/);
   for (const [name, size] of [["icon", 256], ["apple-icon", 180]] as const) {
     const png = readFileSync(`src/app/${name}.png`);
     assert.equal(png.subarray(1, 4).toString(), "PNG");
     assert.equal(png.readUInt32BE(16), size);
     assert.equal(png.readUInt32BE(20), size);
+  }
+});
+
+
+test("wordmark glyph emphasis is borderless, transparent and uses surface-specific Ember accents", () => {
+  const css = readFileSync("src/app/globals.css", "utf8");
+  const rule = css.match(/\.brand-initial \{([^}]+)\}/)?.[1] ?? "";
+  assert.match(rule, /color: var\(--color-ember-deep\)/);
+  assert.match(rule, /background: transparent/);
+  assert.match(rule, /border: 0/);
+  assert.match(rule, /box-shadow: none/);
+  assert.match(css, /\.brand-name-on-dark \.brand-initial \{ color: var\(--color-ember\); \}/);
+  for (const name of ["gamana-lockup", "gamana-lockup-dark"]) {
+    const svg = readFileSync(`public/images/brand/${name}.svg`, "utf8");
+    assert.equal((svg.match(/<rect/g) ?? []).length, 1, "Only the overall artboard has a background");
+    assert.doesNotMatch(svg, /stroke=|rx=|opacity=/);
+    assert.ok(svg.includes(BRAND_GLYPH_PATH));
+    assert.ok(svg.includes(name.endsWith("dark") ? '#F2691E' : '#C94A10'));
   }
 });

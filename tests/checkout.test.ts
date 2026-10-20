@@ -33,11 +33,11 @@ test("checkout only accepts online payment and rejects COD or missing methods", 
     assert.throws(() => validatePayment(value), /Cash on delivery is not available/);
 });
 
-test("shipping is included in server-side totals, in integer paise", () => {
+test("shipping is always included in the product price; no additional charge in integer paise", () => {
   const quote = priceCart(items, [product]);
   assert.equal(quote.subtotal, 119900);
-  assert.equal(quote.shipping, 7900);
-  assert.equal(quote.amount, 127800);
+  assert.equal(quote.shipping, 0);
+  assert.equal(quote.amount, 119900);
   const free = priceCart(items, [{ ...product, price: 1499 }]);
   assert.equal(free.shipping, 0);
   assert.equal(free.amount, 149900);
@@ -46,7 +46,7 @@ test("shipping is included in server-side totals, in integer paise", () => {
 test("ignores client prices and rejects any unavailable line, rather than silently dropping it", () => {
   assert.equal(
     priceCart([{ ...items[0], price: 1, amount: 1 }], [product]).amount,
-    127800,
+    119900,
   );
   assert.throws(() =>
     priceCart([...items, { ...items[0], productSlug: "missing" }], [product]),
@@ -266,4 +266,16 @@ test("credential selection defaults to test and never falls back to live keys", 
       RAZORPAY_LIVE_KEY_SECRET: "fake-live-fixture",
     }),
   );
+});
+
+
+test("every order value includes free shipping, including small and multi-item carts", () => {
+  for (const price of [1, 78.5, 899, 1199, 1498.99, 1499, 1500, 2500]) {
+    for (const quantity of [1, 3]) {
+      const quote = priceCart([{ ...items[0], quantity, shipping: 7900 }], [{ ...product, price }]);
+      assert.equal(quote.shipping, 0);
+      assert.equal(quote.amount, Math.round(price * 100) * quantity);
+      assert.equal(quote.amount, quote.subtotal);
+    }
+  }
 });

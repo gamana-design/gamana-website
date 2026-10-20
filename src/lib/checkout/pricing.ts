@@ -1,7 +1,6 @@
 import type { Product } from "@/data/catalog";
 
-export const FREE_SHIPPING_AT = 1499;
-export const SHIPPING_FEE = 79;
+import { SHIPPING_FEE } from "@/lib/shipping";
 export type Customer = {
   fullName: string;
   email: string;
@@ -107,7 +106,7 @@ export function priceCart(items: unknown, catalogue: Product[]) {
     return { product, variant, quantity, unitAmount };
   });
   const subtotal = lines.reduce((sum, l) => sum + l.unitAmount * l.quantity, 0);
-  const shipping = subtotal >= FREE_SHIPPING_AT * 100 ? 0 : SHIPPING_FEE * 100;
+  const shipping = SHIPPING_FEE * 100;
   const amount = subtotal + shipping;
   if (!Number.isSafeInteger(amount) || amount > 100_000_000)
     throw new CheckoutError("Order total exceeds the checkout limit.");

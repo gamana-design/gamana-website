@@ -41,13 +41,27 @@ These preferences apply to future work on this project as well as the current re
 ## Brand-name display rule (owner update)
 
 - Represent the brand as **గMANA** everywhere in website text: Telugu **గ** followed by uppercase Latin **MANA**. The asterisks in the owner's message were formatting, not part of the name.
-- The Telugu initial uses primary Kalam Ink (`#0B0B10`). Keep it readable on dark sections using a Bone backing, not a different glyph colour.
+- The Telugu glyph is borderless and colour-accented: existing Ember Deep (`#C94A10`) on light surfaces, Ember (`#F2691E`) on dark surfaces. No box, backing badge, border or shadow around గ. This owner correction supersedes the older Kalam Ink initial rule.
 - Use the shared `BrandName`/`BrandText` components for visible branding, including small labels, editorial copy, footer, navigation and admin. Use the canonical plain string for metadata, accessibility labels and the Razorpay checkout name. Razorpay does not support per-letter name styling.
 - Do not rename URLs, social handles, email addresses, asset paths, environment variables, database identifiers or existing order references. Preserve original garment photography and archival artwork rather than silently editing lettering printed in an image.
 
 ## Standalone glyph and colour hold (owner update)
 
 - The standalone brand symbol is now Telugu **గ**, replacing the runner symbol in website identity and browser/home-screen icons. Keep the **గMANA** wordmark unchanged.
-- Use `BrandGlyph` or `/images/brand/ga-glyph.svg` for standalone identity. The outlined master uses Noto Sans Telugu 600 and existing Kalam Ink; Bone backs it on dark surfaces.
+- Use `BrandGlyph` or `/images/brand/ga-glyph.svg` for standalone identity. The outlined master uses Noto Sans Telugu 600; use the approved Ember tones with no backing badge.
 - Do not modify the runner printed on real garments, product photographs or archival artwork. The old runner asset is archival, not the active website symbol.
 - The general brand colour rethink is **on hold**. Do not change palette values or introduce a new colour scheme until the owner resumes it.
+
+## Product upload / Qikink identifiers
+
+- Keep Qikink Product ID/type, per-variation Product SKU, Design SKU, Store SKU and supplier cost as distinct admin fields. A dashboard Design SKU is not the legacy 20-character design code.
+- Photos and mockups are uploaded manually by the owner. Do not infer them from an export or fetch them automatically.
+- Do not guess whether Product SKU or Store SKU should be sent to Qikink. New confirmed order SKUs are entered explicitly after confirmation; existing order SKUs remain unchanged.
+- New products start as hidden drafts. Permit unfinished draft saves; require a cover, positive selling price and explicit order SKUs before shop visibility. Supplier costs stay private.
+- See `docs/admin-product-upload.md` for the owner workflow and the storage migration required before publication.
+
+## Free shipping and glyph emphasis (owner update)
+
+- Shipping is always free across India, already included in product prices. Never add a minimum spend, shipping upsell, checkout surcharge or price increase to cover shipping. Browser and server use `src/lib/shipping.ts`; preserve historical order snapshots.
+- The Telugu గ is the hero glyph, not an ordinary text initial. It must visibly stand out from MANA everywhere: use the shared outlined, borderless colour-accented `BrandName` / `BrandText` and approved vector/social masters in `docs/GAMANA-Brand-Spec.md`. Retain exact accessible name గMANA and an unbroken wordmark. Only the glyph accent is updated; the wider colour palette remains on hold.
+- This emphasis does not resume the on-hold palette redesign or authorise changing printed garment artwork. External provider names (e.g. Razorpay) remain the exact plain string where custom letter styling is unsupported.

@@ -1,9 +1,12 @@
+import { shippingCopy } from "./shipping";
 /** Display branding only. Never apply this to URLs, identifiers, or saved order data. */
 export const BRAND_NAME = "గMANA";
-export const BRAND_INITIAL_COLOR = "#0B0B10";
+// Existing Ember tones: deeper on light surfaces, brighter on dark surfaces.
+export const BRAND_INITIAL_COLOR = "#C94A10";
+export const BRAND_INITIAL_COLOR_ON_DARK = "#F2691E";
 
 export function brandCopy(text: string): string {
-  return text.replace(/\bGAMANA\b/g, BRAND_NAME);
+  return shippingCopy(text.replace(/\bGAMANA\b/g, BRAND_NAME));
 }
 
 const copyFields = new Set([
