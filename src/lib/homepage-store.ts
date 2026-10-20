@@ -49,7 +49,7 @@ export const defaultHomepageSettings: HomepageSettings = {
   featuredEyebrow: "The current drop",
   featuredTitle: "The first pieces",
   announcementItems: [
-    "Free shipping across India over ₹1,499",
+    "Free shipping across India. Always. Included in the price.",
     "Two lines. One mindset.",
     "Printed on demand — dispatched in 3 days",
     "From gym to street, without changing who you are",

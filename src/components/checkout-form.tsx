@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart";
 import { brand } from "@/lib/brand";
 import { formatINR } from "@/lib/utils";
 
-import { FREE_SHIPPING_AT, SHIPPING_FEE } from "@/lib/checkout/pricing";
+import { SHIPPING_FEE, SHIPPING_DETAIL } from "@/lib/shipping";
 import {
   openRazorpay,
   type PaymentResult,
@@ -67,7 +67,7 @@ export function CheckoutForm({
     };
   }
 
-  const shipping = subtotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
+  const shipping = SHIPPING_FEE;
   const total = subtotal + shipping;
 
   const busy = useRef(false);
@@ -524,7 +524,7 @@ export function CheckoutForm({
             <div className="flex justify-between">
               <dt className="text-muted">Shipping</dt>
               <dd className="tabular-nums">
-                {shipping === 0 ? "Free" : formatINR(shipping)}
+                Free · included
               </dd>
             </div>
             <div className="flex justify-between border-t border-line pt-3.5 text-[1.05rem] font-semibold">
@@ -532,6 +532,8 @@ export function CheckoutForm({
               <dd className="tabular-nums">{formatINR(total)}</dd>
             </div>
           </dl>
+
+          <p className="mt-3 text-xs text-muted">{SHIPPING_DETAIL}</p>
 
           <button
             type="submit"

@@ -14,7 +14,9 @@ test("canonical display name uses the exact Telugu/Latin spelling and primary co
   assert.equal(BRAND_INITIAL_COLOR, colors.kalam);
   const markup = renderToStaticMarkup(createElement(BrandName));
   assert.match(markup, /aria-label="గMANA"/);
-  assert.match(markup, /class="brand-initial" lang="te" aria-hidden="true">గ/);
+  assert.match(markup, /class="brand-initial" lang="te" aria-hidden="true"><svg/);
+  assert.ok(markup.includes(BRAND_GLYPH_PATH));
+  assert.match(markup, /class="sr-only">గ/);
   assert.match(markup, /class="brand-latin" aria-hidden="true">MANA/);
   assert.doesNotMatch(markup, /GAMANA|\*\*/);
 });

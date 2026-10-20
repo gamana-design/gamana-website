@@ -1,15 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, Truck, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
+import { SHIPPING_HEADLINE, SHIPPING_DETAIL } from "@/lib/shipping";
 import { useCart } from "@/lib/cart";
 import { formatINR } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-const FREE_SHIPPING_AT = 1499;
 
 export function CartDrawer() {
   const { isOpen, close, lines, subtotal, count, setQuantity, remove } = useCart();
@@ -20,9 +20,6 @@ export function CartDrawer() {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-
-  const remaining = Math.max(0, FREE_SHIPPING_AT - subtotal);
-  const progress = Math.min(100, (subtotal / FREE_SHIPPING_AT) * 100);
 
   return (
     <AnimatePresence>
@@ -82,28 +79,8 @@ export function CartDrawer() {
             ) : (
               <>
                 <div className="border-b border-line px-6 py-4">
-                  <p className="text-[0.78rem] text-muted">
-                    {remaining > 0 ? (
-                      <>
-                        <span className="text-graphite">
-                          {formatINR(remaining)}
-                        </span>{" "}
-                        away from free shipping
-                      </>
-                    ) : (
-                      <span className="text-success">
-                        Free shipping unlocked
-                      </span>
-                    )}
-                  </p>
-                  <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-line">
-                    <motion.div
-                      className="h-full rounded-full bg-ember"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 0.6, ease: EASE }}
-                    />
-                  </div>
+                  <p className="flex items-center gap-2 text-sm font-medium"><Truck size={17} aria-hidden="true" />{SHIPPING_HEADLINE}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted">{SHIPPING_DETAIL}</p>
                 </div>
 
                 <ul className="flex-1 overflow-y-auto px-6">
@@ -192,7 +169,7 @@ export function CartDrawer() {
                     </span>
                   </div>
                   <p className="mt-1.5 text-[0.75rem] text-muted">
-                    Taxes included. Shipping calculated at checkout.
+                    Taxes and shipping included. The price you see is the price you pay.
                   </p>
                   <Link
                     href="/checkout"

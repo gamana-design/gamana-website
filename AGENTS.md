@@ -59,3 +59,9 @@ These preferences apply to future work on this project as well as the current re
 - Do not guess whether Product SKU or Store SKU should be sent to Qikink. New confirmed order SKUs are entered explicitly after confirmation; existing order SKUs remain unchanged.
 - New products start as hidden drafts. Permit unfinished draft saves; require a cover, positive selling price and explicit order SKUs before shop visibility. Supplier costs stay private.
 - See `docs/admin-product-upload.md` for the owner workflow and the storage migration required before publication.
+
+## Free shipping and glyph emphasis (owner update)
+
+- Shipping is always free across India, already included in product prices. Never add a minimum spend, shipping upsell, checkout surcharge or price increase to cover shipping. Browser and server use `src/lib/shipping.ts`; preserve historical order snapshots.
+- The Telugu గ is the hero glyph, not an ordinary text initial. It must visibly stand out from MANA everywhere: use the shared outlined, larger badged `BrandName` / `BrandText` and approved vector/social masters in `docs/GAMANA-Brand-Spec.md`. Retain exact accessible name గMANA, Kalam Ink on Bone and an unbroken wordmark.
+- This emphasis does not resume the on-hold palette redesign or authorise changing printed garment artwork. External provider names (e.g. Razorpay) remain the exact plain string where custom letter styling is unsupported.

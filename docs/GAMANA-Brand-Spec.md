@@ -1,9 +1,37 @@
-# గMANA — Brand & Design System Spec v1.2
+# గMANA — Brand & Design System Spec v1.3
 
 *Companion to the GAMANA Brand Identity Document v1.0.*
 *Site: https://gamana-wear.vercel.app · Repo: github.com/gamana-design/gamana-website*
 
 ---
+
+## Owner correction — 20 October 2026
+
+**The Telugu గ is the hero glyph, not an ordinary initial.** Every new brand
+lockup must visibly highlight it rather than shrink it to match the Latin text.
+The website uses the outlined Telugu master inside a larger Bone badge, with
+Kalam Ink glyph/stroke and a small offset shadow. It scales together with MANA
+without wrapping; use `BrandName` / `BrandText` throughout storefront and admin.
+The glyph is font-independent and accessible under the exact name గMANA.
+
+Reusable outlined masters for future branding material:
+- `/images/brand/gamana-lockup.svg` — light surface.
+- `/images/brand/gamana-lockup-dark.svg` — dark surface.
+- `/images/brand/gamana-social.png` — 1200 × 630 social-sharing card, also used
+  by the website's Open Graph and Twitter metadata.
+- `/images/brand/ga-glyph.svg` — standalone symbol (existing browser and
+  home-screen icons remain glyph-only).
+
+SVGs have outlined letters, no external fonts or images; source letterforms
+are self-hosted Space Grotesk and Noto Sans Telugu (SIL Open Font License).
+These are new branding masters, not replacements for artwork printed on
+products. Existing garment imagery is untouched. The general colour-palette
+rethink remains on hold: use existing Kalam Ink `#0B0B10` and Bone `#F5EDDA`.
+
+**Selling point: “Free shipping across India. Always.”** Delivery is already
+included in every product price, with no minimum spend or extra shipping
+charge. Show this in announcements, campaign copy, product details, the bag,
+checkout and footer. Do not raise prices or rewrite historical orders.
 
 ## 1. The brand in one line
 
@@ -78,8 +106,10 @@ include literal asterisks.
 - The Telugu initial uses **Kalam Ink `#0B0B10`**, the primary brand colour.
 - On dark surfaces, a Bone backing preserves the initial's contrast while the
   Latin letters can follow the light text treatment.
-- Telugu uses the existing self-hosted Noto Sans Telugu font. The wordmark's
-  Latin letters use Space Grotesk. In prose they can inherit the paragraph font.
+- Telugu uses the outlined Noto Sans Telugu 600 glyph master in a larger
+  Bone badge with an offset shadow; never shrink it to match Latin cap height.
+  The wordmark's Latin letters use Space Grotesk. In prose they can inherit
+  the paragraph font. The full name must remain unbroken.
 - The shared `BrandName` and `BrandText` components keep spelling and treatment
   consistent across navigation, footers, campaigns, editorial pages and admin.
 - Page titles, accessible names, structured data and Razorpay's plain-text

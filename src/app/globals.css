@@ -581,21 +581,24 @@ html { scroll-padding-top: 110px; }
 .poster-close h2 { font-size: clamp(50px, 8vw, 110px); max-width: 1000px; margin: 30px auto; }
 @media(max-width:767px) { .poster-label { align-items: flex-start; flex-direction: column; } .poster-product-grid { gap: 35px 15px; } .poster-story > div { grid-template-columns: 1fr; gap: 40px; } .poster-story { padding-block: 55px; } .poster-close { padding-block: 65px; } }
 
-/* Owner-approved hybrid identity: Telugu గ + Latin MANA, one unbroken name. */
-.brand-name { display: inline; white-space: nowrap; text-transform: none; letter-spacing: inherit; }
-.brand-initial { color: var(--color-kalam); font-family: var(--font-telugu); font-size: .87em; font-weight: 600; line-height: 1; letter-spacing: -.05em; }
+/* Owner-approved glyph-first identity. Shared by storefront, editorial and admin. */
+.brand-name { display: inline-flex; align-items: center; gap: .14em; vertical-align: -.25em; white-space: nowrap; text-transform: none; letter-spacing: inherit; line-height: 1.15; }
+.brand-initial { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 1.32em; height: 1.38em; color: var(--color-kalam); background: var(--color-bone); border: max(1px, .025em) solid var(--color-kalam); border-radius: .24em; box-shadow: .065em .065em 0 var(--color-kalam); line-height: 1; letter-spacing: 0; }
+.brand-initial > svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .brand-latin { font-family: inherit; }
-/* Kalam Ink stays the primary colour even on dark surfaces: a Bone backing preserves contrast. */
-.brand-name-on-dark .brand-initial { background: var(--color-bone); border-radius: .06em; padding: .08em .06em 0; margin-right: .035em; }
-.gamana-wordmark .brand-initial { font-weight: 600; }
-.footer-wordmark { font-size: clamp(80px, 21vw, 310px); line-height: 1.1; padding-top: .03em; }
+.brand-name-on-dark .brand-initial { border-color: var(--color-bone); box-shadow: .065em .065em 0 color-mix(in srgb, var(--color-bone) 45%, transparent); }
+.footer-wordmark { font-size: clamp(72px, 17.5vw, 260px); line-height: 1.1; padding-block: .08em; }
 .footer-wordmark .brand-name { letter-spacing: -.055em; }
-.footer-wordmark .brand-initial { font-size: .8em; }
-@media (max-width: 767px) { .footer-wordmark { font-size: 20vw; } }
 .bay-signoff-wordmark { margin-top: 55px; font: 700 25px/1.3 var(--font-display); letter-spacing: -.04em; }
-/* Match the Telugu and Latin optical heights without inheriting Telugu line-box padding. */
-.brand-name { display: inline-flex; align-items: baseline; vertical-align: baseline; line-height: 1; }
-.brand-initial { display: inline-block; line-height: .95; }
-.brand-name-on-dark .brand-initial { padding: .045em .06em .065em; }
-.footer-wordmark { line-height: 1; padding-block: .04em; }
-.footer-wordmark .brand-initial { font-size: .85em; }
+.announcement-shipping { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.announcement-shipping svg { flex-shrink: 0; }
+.footer-shipping { display: flex; align-items: center; gap: 10px; margin-top: 35px; font-size: 13px; color: var(--color-bone); }
+.footer-shipping > svg { flex-shrink: 0; }
+.footer-shipping span span { opacity: .65; }
+.bay-shipping-note { margin-top: 15px; font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+@media (max-width: 767px) {
+  .footer-wordmark { font-size: 17vw; }
+  .footer-shipping { align-items: flex-start; font-size: 11px; line-height: 1.6; }
+  .footer-shipping > svg { margin-top: 2px; }
+  .footer-shipping span span { display: block; }
+}
