@@ -43,7 +43,7 @@ export const dropCampaigns: readonly DropCampaign[] = [
     storyTitle: "Some places stay with you.",
     story: "The warmth on the water. The quiet between the banks. The feeling of a day with nowhere else to be. Bay Breeze carries the spirit of the Godavari into the everyday — familiar at heart, made to go wherever you do.",
     closingLine: "A little closer to home.",
-    productSlugs: ["godavari-tee-sunset", "godavari-tee-lavender", "godavari-tee-violet"],
+    productSlugs: ["godavari-tee-sunset", "godavari-tee-lavender"],
   },
 ];
 

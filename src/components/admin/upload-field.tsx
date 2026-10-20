@@ -1,6 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import {
+  MEDIA_STORAGE_BUCKET,
+  mediaStorageErrorMessage,
+  mediaUploadValidationError,
+  parseMediaUploadResponse,
+} from "@/lib/upload-response";
 
 export function UploadField({
   value,
@@ -20,18 +27,41 @@ export function UploadField({
   const [error, setError] = useState("");
   async function upload(file?: File) {
     if (!file || busy) return;
-    setBusy(true);
     setError("");
+    const validationError = mediaUploadValidationError({
+      fileName: file.name,
+      fileSize: file.size,
+      contentType: file.type,
+      folder,
+    });
+    if (validationError) {
+      setError(validationError);
+      if (ref.current) ref.current.value = "";
+      return;
+    }
+    setBusy(true);
     try {
-      const body = new FormData();
-      body.set("file", file);
-      body.set("folder", folder);
-      body.set("label", label);
-      const res = await fetch("/api/admin/upload", { method: "POST", body });
-      const result = await res.json();
-      if (!res.ok)
-        throw new Error(result.error || "Upload failed. Please try again.");
-      onChange(result.url);
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          contentType: file.type,
+          folder,
+          label,
+        }),
+      });
+      const ticket = await parseMediaUploadResponse(res);
+      const { error: storageError } = await getSupabaseBrowser()
+        .storage.from(MEDIA_STORAGE_BUCKET)
+        .uploadToSignedUrl(ticket.path, ticket.token, file, {
+          contentType: file.type,
+        });
+      if (storageError) {
+        throw new Error(mediaStorageErrorMessage(storageError.message));
+      }
+      onChange(ticket.url);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Upload failed. Please try again.",
@@ -55,7 +85,11 @@ export function UploadField({
           ref={ref}
           type="file"
           aria-label={`Choose ${label}`}
-          accept={folder === "designs" ? "image/*,.pdf" : "image/*"}
+          accept={
+            folder === "designs"
+              ? "image/jpeg,image/png,image/webp,image/avif,image/gif,.pdf"
+              : "image/jpeg,image/png,image/webp,image/avif,image/gif"
+          }
           hidden
           onChange={(e) => upload(e.target.files?.[0])}
         />

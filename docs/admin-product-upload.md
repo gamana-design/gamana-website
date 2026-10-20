@@ -13,7 +13,7 @@
    - **Qikink product cost**: your supplier cost, not your customer's selling price. This stays private in admin.
    - **Availability**: set this yourself; it is not automatically checked with Qikink.
    - **Confirmed order SKU**: leave this blank until Qikink confirms which identifier selects the saved printed variation. The form never guesses or copies one of the other codes here. Existing products keep their existing order SKUs.
-6. Under **Photos & mockups**, upload the cover, gallery photos and optional mockup yourself. **Add gallery photo** adds another upload slot. A separately uploaded mockup is not automatically shown to customers; add it to the cover/gallery too if needed.
+6. Under **Photos & mockups**, upload the cover, gallery photos and optional mockup yourself. **Add gallery photo** adds another upload slot. A separately uploaded mockup is not automatically shown to customers; add it to the cover/gallery too if needed. Files are uploaded at their original quality, up to 25 MB each; no resizing or compression is applied. Design files also accept PDF.
 7. Leave **Show in shop** off and click **Save draft** while anything is unfinished. Drafts can be saved without a photo or confirmed order codes.
 8. Once ready, add a cover photo, a selling price greater than zero, and a confirmed order SKU for every size. Turn on **Show in shop** and click **Save product**.
 
@@ -27,6 +27,7 @@ The CSV discussed with the owner is only a summary. This form does not import it
 - Before deploying the new form, apply `src/lib/product-upload-schema.sql` to the existing database after the baseline `supabase-admin-schema.sql` tables exist. The migration is additive and repeatable, adds the separate reference columns, and creates `gamana_save_product` for transactional saves. Do not seed or replace the existing catalogue.
 - It enables RLS and revokes browser-role access to the two catalogue tables to protect supplier costs. Storefront reads continue through the existing server-side service-role client. Verify any existing policies/integrations before rollout.
 - The save function is executable only by `service_role`. The existing authenticated admin routes validate the whole draft before invoking it. It saves the product and variations together or rolls everything back.
+- Image files are not sent through the serverless admin route. The authenticated route issues a one-file signed Storage upload ticket; the browser then sends the original file directly to the public `gamana-media` bucket. The service-role key stays server-side. The admin form validates file type and caps files at 25 MB; the Storage bucket enforces the same 25 MB maximum.
 - Public catalogue projection excludes supplier costs, Qikink references and admin-only print file settings. The established `sku` field is unchanged; Product SKU and Store SKU do not automatically become fulfilment SKUs.
 - `npm test` includes real in-memory Postgres migration/rollback/access tests. Browser QA used an isolated local database and synthetic products; it did not touch Supabase, Qikink, Razorpay or production records.
 - For future fresh installations, apply the storage migration before deploying this form. Do not activate live payments or alter the paused colour scheme.
