@@ -1,8 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { legacyProducts } from "../src/data/legacy-site-content";
-import { priceCart, validateCustomer, validatePayment } from "../src/lib/checkout/pricing";
+import {
+  ensureLiveOrderSkuReadiness,
+  priceCart,
+  validateCustomer,
+  validatePayment,
+} from "../src/lib/checkout/pricing";
+import { cartLineKey } from "../src/lib/cart-line-key";
 import { paymentMatches, validSignature } from "../src/lib/checkout/signatures";
 import type { Product } from "../src/data/catalog";
 
@@ -29,8 +36,20 @@ const customer = {
 
 test("checkout only accepts online payment and rejects COD or missing methods", () => {
   assert.equal(validatePayment("Prepaid"), "Prepaid");
-  for (const value of ["COD", "cod", "Cash on delivery", "", null, undefined, {}, 1])
-    assert.throws(() => validatePayment(value), /Cash on delivery is not available/);
+  for (const value of [
+    "COD",
+    "cod",
+    "Cash on delivery",
+    "",
+    null,
+    undefined,
+    {},
+    1,
+  ])
+    assert.throws(
+      () => validatePayment(value),
+      /Cash on delivery is not available/,
+    );
 });
 
 test("shipping is always included in the product price; no additional charge in integer paise", () => {
@@ -41,6 +60,66 @@ test("shipping is always included in the product price; no additional charge in 
   const free = priceCart(items, [{ ...product, price: 1499 }]);
   assert.equal(free.shipping, 0);
   assert.equal(free.amount, 149900);
+});
+
+test("missing-SKU products can be tested but the whole product is blocked in live mode", () => {
+  const testOnlyProduct: Product = {
+    ...product,
+    variants: product.variants.map((variant) => ({ ...variant, sku: "" })),
+  };
+  const testQuote = priceCart(items, [testOnlyProduct]);
+  assert.equal(testQuote.lines[0].variant.sku, "");
+  assert.doesNotThrow(() =>
+    ensureLiveOrderSkuReadiness(testQuote.lines, "test"),
+  );
+  assert.throws(
+    () => ensureLiveOrderSkuReadiness(testQuote.lines, "live"),
+    /test mode.*Live orders are blocked/,
+  );
+
+  const partlyConfiguredProduct: Product = {
+    ...product,
+    variants: [
+      { ...product.variants[0], sku: "CONFIRMED-S" },
+      { ...product.variants[0], size: "M", sku: "" },
+    ],
+  };
+  const partlyConfiguredQuote = priceCart(items, [partlyConfiguredProduct]);
+  assert.throws(
+    () => ensureLiveOrderSkuReadiness(partlyConfiguredQuote.lines, "live"),
+    /every variation has a Qikink-confirmed order SKU/,
+  );
+  assert.doesNotThrow(() =>
+    ensureLiveOrderSkuReadiness(priceCart(items, [product]).lines, "live"),
+  );
+});
+
+test("cart identity stays distinct for SKU-less sizes and caps quantities per variation", () => {
+  const color = product.variants[0].color;
+  const testProduct: Product = {
+    ...product,
+    variants: [
+      { ...product.variants[0], size: "S", color, sku: "" },
+      { ...product.variants[0], size: "M", color, sku: "" },
+    ],
+  };
+  const testLines = [
+    { ...items[0], size: "S", quantity: 6 },
+    { ...items[0], size: "M", quantity: 6 },
+  ];
+  assert.notEqual(
+    cartLineKey(testProduct.slug, "S", color),
+    cartLineKey(testProduct.slug, "M", color),
+  );
+  assert.equal(priceCart(testLines, [testProduct]).lines.length, 2);
+});
+
+test("live SKU readiness runs before an order is stored or a payment is created", () => {
+  const route = readFileSync("src/app/api/orders/route.ts", "utf8");
+  const guard = route.indexOf("ensureLiveOrderSkuReadiness(quote.lines, mode)");
+  const store = route.indexOf('db.rpc("gamana_create_checkout"');
+  const payment = route.indexOf('razorpayRequest<RazorpayOrder>("orders"');
+  assert.ok(guard >= 0 && store > guard && payment > guard);
 });
 
 test("ignores client prices and rejects any unavailable line, rather than silently dropping it", () => {
@@ -94,7 +173,11 @@ test("normalises delivery details and validates Indian contact/address data", ()
 
 test("checkout accepts separate customer names and requires both when provided", () => {
   const { fullName: _legacyName, ...contact } = customer;
-  const details = { ...contact, firstName: "  Test  ", lastName: "  Customer  " };
+  const details = {
+    ...contact,
+    firstName: "  Test  ",
+    lastName: "  Customer  ",
+  };
   assert.equal(validateCustomer(details).fullName, "Test Customer");
   assert.equal(
     validateCustomer({ ...details, phone: "9876543210" }).phone,
@@ -112,7 +195,8 @@ test("checkout accepts separate customer names and requires both when provided",
     { ...details, lastName: 123 },
     { ...details, phone: "987654321" },
     { ...details, phone: "98765432101" },
-  ]) assert.throws(() => validateCustomer(bad));
+  ])
+    assert.throws(() => validateCustomer(bad));
   // Previously saved sessions using a full name remain valid.
   assert.equal(validateCustomer(customer).fullName, "Test Customer");
 });
@@ -165,8 +249,9 @@ test("only a captured, unrefunded payment for the exact order, amount and curren
 });
 
 test("test mode and unpaid orders cannot trigger live fulfilment", async () => {
-  const { fulfilmentAction } =
-    await import("../src/lib/checkout/fulfilment-rules");
+  const { fulfilmentAction } = await import(
+    "../src/lib/checkout/fulfilment-rules"
+  );
   const order = {
     payment_gateway: "Prepaid",
     payment_status: "paid",
@@ -210,6 +295,16 @@ test("test mode and unpaid orders cannot trigger live fulfilment", async () => {
   );
 });
 
+test("test payments exit before the Qikink fulfilment request", () => {
+  const fulfilment = readFileSync("src/lib/checkout/fulfilment.ts", "utf8");
+  const testBranch = fulfilment.indexOf('if (action === "test")');
+  const safeReturn = fulfilment.indexOf("Test payments NEVER reach Qikink");
+  const qikinkRequest = fulfilment.indexOf("createOrder({");
+  assert.ok(
+    testBranch >= 0 && safeReturn > testBranch && qikinkRequest > safeReturn,
+  );
+});
+
 test("order references meet Qikink's length/character rules", async () => {
   const { newOrderReference } = await import("../src/lib/checkout/references");
   const references = Array.from({ length: 100 }, newOrderReference);
@@ -219,8 +314,9 @@ test("order references meet Qikink's length/character rules", async () => {
 });
 
 test("credential selection defaults to test and never falls back to live keys", async () => {
-  const { resolveRazorpayConfig } =
-    await import("../src/lib/checkout/razorpay-config");
+  const { resolveRazorpayConfig } = await import(
+    "../src/lib/checkout/razorpay-config"
+  );
   const env = {
     RAZORPAY_TEST_KEY_ID: "rzp_test_fixture",
     RAZORPAY_TEST_KEY_SECRET: "fake-test-fixture",
@@ -268,11 +364,13 @@ test("credential selection defaults to test and never falls back to live keys", 
   );
 });
 
-
 test("every order value includes free shipping, including small and multi-item carts", () => {
   for (const price of [1, 78.5, 899, 1199, 1498.99, 1499, 1500, 2500]) {
     for (const quantity of [1, 3]) {
-      const quote = priceCart([{ ...items[0], quantity, shipping: 7900 }], [{ ...product, price }]);
+      const quote = priceCart(
+        [{ ...items[0], quantity, shipping: 7900 }],
+        [{ ...product, price }],
+      );
       assert.equal(quote.shipping, 0);
       assert.equal(quote.amount, Math.round(price * 100) * quantity);
       assert.equal(quote.amount, quote.subtotal);

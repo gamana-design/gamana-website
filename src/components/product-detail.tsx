@@ -10,7 +10,13 @@ import { useCart } from "@/lib/cart";
 import type { Product } from "@/data/catalog";
 import { cn, formatINR } from "@/lib/utils";
 
-export function ProductDetail({ product }: { product: Product }) {
+export function ProductDetail({
+  product,
+  liveMode = false,
+}: {
+  product: Product;
+  liveMode?: boolean;
+}) {
   const { add } = useCart();
   const [size, setSize] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
@@ -20,8 +26,16 @@ export function ProductDetail({ product }: { product: Product }) {
 
   const activeVariant =
     product.variants.find((v) => v.size === size) ?? product.variants[0];
+  const testOnly = product.variants.some((variant) => !variant.sku.trim());
+  const liveUnavailable = liveMode && testOnly;
 
   function onAdd() {
+    if (liveUnavailable) {
+      setError(
+        "This product cannot be ordered live until every variation has a confirmed order SKU.",
+      );
+      return;
+    }
     if (!size) {
       setError("Choose a size first.");
       return;
@@ -52,10 +66,7 @@ export function ProductDetail({ product }: { product: Product }) {
           />
           <div className="absolute left-4 top-4 flex flex-col items-start gap-2">
             <span
-              className={cn(
-                "label rounded-full px-3 py-2 text-white",
-                accent,
-              )}
+              className={cn("label rounded-full px-3 py-2 text-white", accent)}
             >
               {product.line}
             </span>
@@ -121,6 +132,17 @@ export function ProductDetail({ product }: { product: Product }) {
           <span className="ml-1 text-[0.75rem] text-muted">incl. taxes</span>
         </div>
 
+        {testOnly && (
+          <p
+            role="status"
+            className="mt-5 rounded-[3px] border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            {liveMode
+              ? "Testing item — live orders are blocked until every variation has a Qikink-confirmed order SKU."
+              : "Testing item — live orders are blocked until every variation has a Qikink-confirmed order SKU. Test checkout will not create a Qikink print or shipping order."}
+          </p>
+        )}
+
         <p className="mt-6 text-pretty text-[0.98rem] leading-relaxed text-graphite/80">
           <BrandText>{product.description}</BrandText>
         </p>
@@ -129,7 +151,10 @@ export function ProductDetail({ product }: { product: Product }) {
         <div className="mt-9">
           <div className="flex items-center justify-between">
             <p className="label text-muted">Size</p>
-            <Link href="/contact" className="link-underline text-[0.78rem] text-muted hover:text-graphite">
+            <Link
+              href="/contact"
+              className="link-underline text-[0.78rem] text-muted hover:text-graphite"
+            >
               Sizing help ↗
             </Link>
           </div>
@@ -139,7 +164,7 @@ export function ProductDetail({ product }: { product: Product }) {
               const out = variant.stock === "out";
               return (
                 <button
-                  key={variant.sku}
+                  key={`${variant.color}::${variant.size}`}
                   type="button"
                   disabled={out}
                   onClick={() => {
@@ -191,13 +216,16 @@ export function ProductDetail({ product }: { product: Product }) {
           <motion.button
             type="button"
             onClick={onAdd}
+            disabled={liveUnavailable}
             whileTap={{ scale: 0.985 }}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2.5 rounded-full py-4 text-[0.78rem] font-medium uppercase tracking-[0.18em] transition-colors",
+              "flex flex-1 items-center justify-center gap-2.5 rounded-full py-4 text-[0.78rem] font-medium uppercase tracking-[0.18em] transition-colors disabled:cursor-not-allowed disabled:opacity-50",
               added ? "bg-success text-white" : "bg-kalam text-bone",
             )}
           >
-            {added ? (
+            {liveUnavailable ? (
+              "Unavailable for live orders"
+            ) : added ? (
               <>
                 <Check className="h-4 w-4" strokeWidth={2.2} />
                 Added to bag
@@ -213,14 +241,18 @@ export function ProductDetail({ product }: { product: Product }) {
 
         {/* Fulfilment */}
         <div className="mt-8 flex items-start gap-3 rounded-[3px] border border-line bg-bone-deep/40 p-5">
-          <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ember" strokeWidth={1.6} />
+          <Truck
+            className="mt-0.5 h-4 w-4 shrink-0 text-ember"
+            strokeWidth={1.6}
+          />
           <div>
             <p className="text-[0.88rem] font-medium">
               Free shipping across India. Always.
             </p>
             <p className="mt-1.5 text-[0.82rem] leading-relaxed text-muted">
-              Shipping is already included in the price. Your piece is printed on demand,
-              dispatched in about three days, and shipped across India.
+              Shipping is already included in the price. Your piece is printed
+              on demand, dispatched in about three days, and shipped across
+              India.
             </p>
           </div>
         </div>
@@ -238,12 +270,15 @@ export function ProductDetail({ product }: { product: Product }) {
             </ul>
           </DetailBlock>
           <DetailBlock title="Why it exists">
-            <p><BrandText>{product.blurb}</BrandText></p>
+            <p>
+              <BrandText>{product.blurb}</BrandText>
+            </p>
           </DetailBlock>
           <DetailBlock title="Shipping & returns">
             <p>
-              Printed and dispatched in roughly three working days. Shipping is always free across India, included in the price. Returns accepted within seven days of
-              delivery on unworn pieces with tags attached.
+              Printed and dispatched in roughly three working days. Shipping is
+              always free across India, included in the price. Returns accepted
+              within seven days of delivery on unworn pieces with tags attached.
             </p>
           </DetailBlock>
         </div>

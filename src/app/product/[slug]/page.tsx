@@ -51,7 +51,10 @@ export default async function ProductPage({
   return (
     <>
       <div className="product-page-breadcrumb container-gamana pt-6">
-        <nav aria-label="Breadcrumb" className="label flex items-center gap-2 text-muted">
+        <nav
+          aria-label="Breadcrumb"
+          className="label flex items-center gap-2 text-muted"
+        >
           <Link href="/" className="hover:text-graphite">
             Home
           </Link>
@@ -65,7 +68,10 @@ export default async function ProductPage({
       </div>
 
       <section className="container-gamana py-8 md:py-12">
-        <ProductDetail product={product} />
+        <ProductDetail
+          product={product}
+          liveMode={process.env.RAZORPAY_MODE === "live"}
+        />
       </section>
 
       {related.length > 0 && (

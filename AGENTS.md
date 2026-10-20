@@ -57,7 +57,7 @@ These preferences apply to future work on this project as well as the current re
 - Keep Qikink Product ID/type, per-variation Product SKU, Design SKU, Store SKU and supplier cost as distinct admin fields. A dashboard Design SKU is not the legacy 20-character design code.
 - Photos and mockups are uploaded manually by the owner. Do not infer them from an export or fetch them automatically.
 - Do not guess whether Product SKU or Store SKU should be sent to Qikink. New confirmed order SKUs are entered explicitly after confirmation; existing order SKUs remain unchanged.
-- New products start as hidden drafts. Permit unfinished draft saves; require a cover, positive selling price and explicit order SKUs before shop visibility. Supplier costs stay private.
+- New products start as hidden drafts. Permit unfinished draft saves. To appear in the shop, require a cover, positive selling price and at least one variation. Missing confirmed order SKUs are allowed for test-only products, but the server must block live checkout for the whole product until every variation has a confirmed SKU. Test-mode checkout may proceed; test orders must never be sent to Qikink. Supplier costs stay private.
 - See `docs/admin-product-upload.md` for the owner workflow and the storage migration required before publication.
 
 ## Free shipping and glyph emphasis (owner update)

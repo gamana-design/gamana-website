@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Product } from "@/data/catalog";
+import type { AdminProduct } from "@/lib/admin-product";
 import { getAllProducts } from "@/lib/catalog-store";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteProduct } from "@/components/admin/delete-product";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
 
 export default async function Products() {
-  let products: Product[] = [];
+  let products: AdminProduct[] = [];
   let error = "";
   try {
     if (!isSupabaseConfigured())
@@ -32,6 +32,10 @@ export default async function Products() {
           <h1 className="font-display text-4xl font-bold">Products</h1>
           <p className="mt-2 text-sm text-bone/55">
             Catalogue, variants and print setup.
+          </p>
+          <p className="mt-2 text-xs text-bone/45">
+            Products without a confirmed order SKU are marked Test only. They
+            cannot be ordered while checkout is in live mode.
           </p>
           {!error && products.length > 0 && (
             <p className="mt-2 text-xs text-emerald-300">
@@ -69,11 +73,12 @@ export default async function Products() {
         </section>
       ) : (
         <div className="mt-7 overflow-x-auto rounded-[4px] border border-bone/10">
-          <table className="w-full min-w-[750px] text-left text-sm">
+          <table className="w-full min-w-[850px] text-left text-sm">
             <thead className="bg-bone/[.04] text-xs uppercase text-bone/50">
               <tr>
                 {[
                   "Product",
+                  "Status",
                   "Line",
                   "Print id",
                   "Variants",
@@ -109,13 +114,19 @@ export default async function Products() {
                   </td>
                   <td className="p-4">
                     <span className="rounded-full border border-bone/10 px-3 py-1 text-[10px]">
-                      {p.line}
+                      {p.active === false
+                        ? "Draft"
+                        : p.variants.some((variant) => !variant.sku.trim())
+                          ? "Test only"
+                          : "Active"}
                     </span>
                   </td>
                   <td className="p-4">
-                    {(p as Product & { printTypeId?: number }).printTypeId ??
-                      "—"}
+                    <span className="rounded-full border border-bone/10 px-3 py-1 text-[10px]">
+                      {p.line}
+                    </span>
                   </td>
+                  <td className="p-4">{p.printTypeId ?? "—"}</td>
                   <td className="p-4">{p.variants.length}</td>
                   <td className="p-4">₹{p.price.toLocaleString("en-IN")}</td>
                   <td className="p-4">

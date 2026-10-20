@@ -94,6 +94,9 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
   const [designSku, setDesignSku] = useState("");
   const [cost, setCost] = useState("");
   const [variantMessage, setVariantMessage] = useState("");
+  const missingOrderSkuCount = d.variants.filter(
+    (variant) => !variant.sku.trim(),
+  ).length;
   function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setDraft((old) => ({ ...old, [key]: value }));
   }
@@ -193,7 +196,9 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
         throw new Error(result.error || "Could not save. Please try again.");
       setMessage(
         d.active
-          ? "Saved. This product is visible in the shop."
+          ? missingOrderSkuCount
+            ? "Saved for testing. This product is visible in the shop, but live orders are blocked until every variation has a Qikink-confirmed order SKU."
+            : "Saved. This product is visible in the shop."
           : "Draft saved. This product is hidden from the shop.",
       );
       if (!d.id) router.replace(`/admin/products/${result.id}`);
@@ -293,7 +298,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
 
         <Section
           title={`Variants${d.variants.length ? ` · ${d.variants.length}` : ""}`}
-          hint="Add sizes and colours. Set availability and, when confirmed by Qikink, the order SKU for each variation."
+          hint="Add sizes and colours. Order SKUs are optional for test items; live orders stay blocked until every variation has its confirmed Qikink SKU."
         >
           <div className="rounded border border-bone/10 p-4">
             <h3 className="text-sm font-semibold">Add variants</h3>
@@ -444,14 +449,14 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
                   value={v.sku}
                   maxLength={50}
                   aria-label={`Confirmed order SKU for ${v.color} / ${v.size}`}
-                  aria-required={d.active}
                   onChange={(e) => changeVariant(i, "sku", e.target.value)}
                 />
               </label>
               <p className="mt-2 text-xs leading-relaxed text-bone/50">
-                This is the exact code sent to Qikink for an order. It is not
-                copied from Product SKU, Design SKU or Store SKU. Enter it only
-                after Qikink confirms which code to use.
+                This is the code sent to Qikink for a live order. It is not
+                copied from Product SKU, Design SKU or Store SKU. Leave it blank
+                while testing; live orders stay blocked until Qikink confirms
+                which code to use for every variation.
               </p>
               <details className="mt-4 rounded border border-bone/10 p-3">
                 <summary className="cursor-pointer text-xs text-bone/70">
@@ -562,9 +567,24 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
             </select>
           </label>
           <p className="text-xs leading-relaxed text-bone/55">
-            Active products appear in the shop. To publish, add a cover photo, a
-            price above ₹0, and a Qikink-confirmed order SKU for every variant.
+            Active products appear in the shop. A cover photo, price above ₹0,
+            and at least one variation are still required. If any variation is
+            missing its confirmed order SKU, the whole product stays test-only
+            and live checkout blocks it until every SKU is confirmed.
           </p>
+          {d.active && missingOrderSkuCount > 0 && (
+            <p
+              role="status"
+              className="rounded border border-amber-500/25 bg-amber-400/5 p-3 text-xs leading-relaxed text-amber-100"
+            >
+              Test only: {missingOrderSkuCount} variation
+              {missingOrderSkuCount === 1 ? " is" : "s are"} missing a confirmed
+              order SKU. When test checkout is enabled, you can test this
+              product; the test order will not be sent to Qikink. Live checkout
+              will block this product until every variation has its confirmed
+              SKU.
+            </p>
+          )}
           <div className="flex flex-wrap gap-4">
             <label className="text-xs">
               <input

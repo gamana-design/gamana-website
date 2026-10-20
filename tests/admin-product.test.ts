@@ -72,24 +72,22 @@ test("product editor keeps the familiar product tasks visible and tucks optional
   assert.match(editor, /Qikink product details/);
   assert.match(editor, /Other Qikink references and cost/);
   assert.match(editor, /Confirmed order SKU/);
+  assert.match(editor, /Order SKUs are optional for test items/);
+  assert.match(editor, /live checkout blocks it/);
+  assert.doesNotMatch(editor, /aria-required=\{d\.active\}/);
 });
 
-test("publication reports missing cover, price and confirmed order SKUs without guessing Qikink codes", () => {
+test("active products may omit order SKUs for testing but still need media, price and variants", () => {
   assert.throws(
     () => validateProductDraft({ ...fixture(), active: true }),
-    /cover photo.*Confirmed order SKU is missing for one variation \(White \/ S\)/,
-  );
-  assert.throws(
-    () =>
-      validateProductDraft({
-        ...fixture(),
-        image: "/images/cover.jpg",
-        active: true,
-      }),
-    /Qikink uses.*Product SKU, Design SKU and Store SKU do not fill it automatically/,
+    /cover photo/,
   );
   const d = fixture();
   d.image = "https://example.com/cover.jpg";
+  const testOnly = validateProductDraft({ ...d, active: true });
+  assert.equal(testOnly.active, true);
+  assert.equal(testOnly.variants![0].sku, "");
+
   d.variants[0].sku = "CONFIRMED-S";
   assert.equal(
     validateProductDraft({ ...d, active: true }).variants![0].sku,
@@ -98,6 +96,10 @@ test("publication reports missing cover, price and confirmed order SKUs without 
   assert.throws(
     () => validateProductDraft({ ...d, active: true, price: 0 }),
     /selling price above ₹0/,
+  );
+  assert.throws(
+    () => validateProductDraft({ ...d, active: true, variants: [] }),
+    /at least one variation/,
   );
 });
 
