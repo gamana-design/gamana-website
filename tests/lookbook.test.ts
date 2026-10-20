@@ -4,48 +4,50 @@ import { existsSync, readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
-  collectionBooks,
-  getBookPages,
-  getBookProducts,
-  getBookSummary,
-  getCollectionBook,
-  getCollectionBooks,
-  type CollectionBook,
+  getCollectionProducts,
+  getCollectionSummary,
+  getPublishedCollection,
+  getPublishedCollections,
+  getStorySections,
+  lookbookCollections,
+  type LookbookCollection,
 } from "../src/lib/lookbook";
-import {
-  getAvailableHotspots,
-  getSpreadStart,
-} from "../src/lib/lookbook-interactions";
+import { getAvailableHotspots } from "../src/lib/lookbook-interactions";
 import { products } from "../src/data/legacy-catalog";
 import { CartProvider } from "../src/lib/cart";
+import { CollectionStory } from "../src/components/lookbook/collection-story";
 import {
   HotspotProduct,
   ShoppableImage,
 } from "../src/components/lookbook/shoppable-image";
 
-const book = collectionBooks[0];
-const selected = getBookProducts(book, products);
+const collection = lookbookCollections[0];
+const sections = getStorySections(collection);
+const selected = getCollectionProducts(collection, products);
 
-test("collection library publishes the real Bay Breeze volume only; unknown collections are absent", () => {
-  assert.equal(getCollectionBooks().length, 1);
-  assert.equal(getCollectionBook("bay-breeze")?.title, "Bay Breeze");
-  assert.equal(getCollectionBook("missing"), undefined);
-  assert.equal(getCollectionBook("../bay-breeze"), undefined);
-  assert.equal(getCollectionBook("BAY-BREEZE"), undefined);
-  const pages = getBookPages(book);
-  assert.equal(pages.length, 8);
-  assert.equal(pages.length % 2, 0);
-  assert.equal(new Set(pages.map((page) => page.id)).size, pages.length);
-  assert.ok(pages.every((page) => /^[a-z0-9-]+$/.test(page.id)));
+test("lookbook lists the published Bay Breeze collection only; unknown collections are absent", () => {
+  assert.equal(getPublishedCollections().length, 1);
+  assert.equal(getPublishedCollection("bay-breeze")?.title, "Bay Breeze");
+  assert.equal(getPublishedCollection("missing"), undefined);
+  assert.equal(getPublishedCollection("../bay-breeze"), undefined);
+  assert.equal(getPublishedCollection("BAY-BREEZE"), undefined);
+  assert.equal(sections.length, 8);
+  assert.equal(
+    new Set(sections.map((section) => section.id)).size,
+    sections.length,
+  );
+  assert.ok(sections.every((section) => /^[a-z0-9-]+$/.test(section.id)));
   assert.deepEqual(
-    [...new Set(pages.map((page) => page.chapter))],
+    [...new Set(sections.map((section) => section.theme))],
     ["The feeling", "In the world", "A closer look", "The collection"],
   );
 });
 
 test("editorial images exist and mappings identify only collection garments, never accessories", () => {
-  for (const page of getBookPages(book)) {
-    for (const image of [page.image, page.secondaryImage].filter(Boolean)) {
+  for (const section of sections) {
+    for (const image of [section.image, section.secondaryImage].filter(
+      Boolean,
+    )) {
       assert.ok(existsSync(`public${image!.src}`));
       assert.ok(image!.alt && image!.caption);
       for (const spot of image!.hotspots ?? []) {
@@ -56,7 +58,9 @@ test("editorial images exist and mappings identify only collection garments, nev
       }
     }
   }
-  const duo = book.pages.find((page) => page.id === "in-the-world")!.image!;
+  const duo = collection.sections.find(
+    (section) => section.id === "in-the-world",
+  )!.image!;
   const lavender = duo.hotspots!.find(
     (spot) => spot.productSlug === "godavari-tee-lavender",
   )!;
@@ -69,16 +73,18 @@ test("editorial images exist and mappings identify only collection garments, nev
   );
 });
 
-test("shopping uses only the public catalogue supplied to the book, without fallback prices or products", () => {
+test("shopping uses only the public catalogue supplied to the collection, without fallback prices or products", () => {
   assert.equal(selected.length, 3);
-  assert.deepEqual(getBookProducts(book, []), []);
+  assert.deepEqual(getCollectionProducts(collection, []), []);
   assert.deepEqual(
-    getBookProducts({ ...book, campaignId: "missing" }, products),
+    getCollectionProducts({ ...collection, campaignId: "missing" }, products),
     [],
   );
   const current = { ...selected[0], price: 899 };
-  assert.deepEqual(getBookProducts(book, [current]), [current]);
-  const image = book.pages.find((page) => page.id === "in-the-world")!.image!;
+  assert.deepEqual(getCollectionProducts(collection, [current]), [current]);
+  const image = collection.sections.find(
+    (section) => section.id === "in-the-world",
+  )!.image!;
   assert.equal(getAvailableHotspots(image, [] as typeof products).length, 0);
   assert.equal(getAvailableHotspots(image, selected).length, 2);
   assert.equal(
@@ -96,9 +102,9 @@ test("shopping uses only the public catalogue supplied to the book, without fall
   );
 });
 
-test("BTS is hidden until actual approved material is supplied; draft URLs never enter client metadata", () => {
-  assert.deepEqual(book.bts, []);
-  assert.ok(getBookPages(book).every((page) => page.kind !== "bts"));
+test("BTS is hidden until actual approved material is supplied; draft URLs never enter public metadata", () => {
+  assert.deepEqual(collection.bts, []);
+  assert.ok(sections.every((section) => section.kind !== "bts"));
   const draft = {
     kind: "image" as const,
     src: "/private-unpublished-sketch.jpg",
@@ -106,12 +112,14 @@ test("BTS is hidden until actual approved material is supplied; draft URLs never
     caption: "Owner-supplied sketch",
     approved: false,
   };
-  const fixture: CollectionBook = { ...book, bts: [draft] };
-  assert.equal(getBookPages(fixture).length, 8);
-  assert.ok(!JSON.stringify(getBookSummary(fixture)).includes(draft.src));
+  const fixture: LookbookCollection = { ...collection, bts: [draft] };
+  assert.equal(getStorySections(fixture).length, 8);
+  assert.ok(!JSON.stringify(getCollectionSummary(fixture)).includes(draft.src));
   assert.equal(
-    getBookPages({ ...fixture, bts: [{ ...draft, approved: true, src: "" }] })
-      .length,
+    getStorySections({
+      ...fixture,
+      bts: [{ ...draft, approved: true, src: "" }],
+    }).length,
     8,
   );
   const approved = {
@@ -126,27 +134,20 @@ test("BTS is hidden until actual approved material is supplied; draft URLs never
     captions: "/fixture-captions.vtt",
     transcript: "Fixture transcript",
   };
-  const published = getBookPages({ ...book, bts: [draft, approved, film] });
-  assert.equal(published.length % 2, 0);
-  assert.equal(published.filter((page) => page.kind === "bts").length, 2);
-  assert.ok(published.some((page) => page.bts?.captions === film.captions));
+  const published = getStorySections({
+    ...collection,
+    bts: [draft, approved, film],
+  });
+  assert.equal(published.filter((section) => section.kind === "bts").length, 2);
+  assert.ok(
+    published.some((section) => section.bts?.captions === film.captions),
+  );
   assert.ok(!JSON.stringify(published).includes(draft.src));
   assert.ok(
-    published.findIndex((page) => page.kind === "bts") <
-      published.findIndex((page) => page.kind === "shop"),
+    published.findIndex((section) => section.kind === "bts") <
+      published.findIndex((section) => section.kind === "shop"),
   );
-});
-
-test("desktop spreads and mobile pages preserve reading position and stay within boundaries", () => {
-  for (let i = 0; i < 8; i++) {
-    assert.equal(getSpreadStart(i, false, 8), i);
-    assert.equal(getSpreadStart(i, true, 8), Math.floor(i / 2) * 2);
-  }
-  assert.equal(getSpreadStart(-10, true, 8), 0);
-  assert.equal(getSpreadStart(100, true, 8), 6);
-  assert.equal(getSpreadStart(100, false, 8), 7);
-  assert.equal(getSpreadStart(NaN, false, 8), 0);
-  assert.equal(getSpreadStart(0, true, 0), 0);
+  assert.ok(!published.some((section) => section.id === "making-notes"));
 });
 
 function renderCard(product: (typeof products)[number]) {
@@ -186,7 +187,9 @@ test("sold-out variants are disabled and an entirely sold-out card cannot quick-
 });
 
 test("photo markers are accessible buttons and absent products leave a purely editorial photograph", () => {
-  const image = book.pages.find((page) => page.id === "in-the-world")!.image!;
+  const image = collection.sections.find(
+    (section) => section.id === "in-the-world",
+  )!.image!;
   const render = (catalogue: typeof products) =>
     renderToStaticMarkup(
       createElement(
@@ -207,13 +210,59 @@ test("photo markers are accessible buttons and absent products leave a purely ed
   assert.ok(unavailable.includes(image.src));
 });
 
-test("reading controls respect reduced motion; public routes do not restore an admin builder", () => {
+test("Shop the Look is the centered sticky focal point, with story copy flowing around it", () => {
+  const markup = renderToStaticMarkup(
+    createElement(
+      CartProvider,
+      null,
+      createElement(CollectionStory, {
+        collection: getCollectionSummary(collection),
+        sections,
+        products: selected,
+      }),
+    ),
+  );
+  assert.match(markup, /Shop the Look/);
+  assert.match(markup, /Some places/);
+  assert.match(markup, /A change/);
+  assert.match(markup, /story-photo-feature/);
+  assert.match(markup, /story-beat-left/);
+  assert.match(markup, /story-beat-right/);
+  assert.match(markup, /href="\/product\//);
+  assert.doesNotMatch(
+    markup,
+    /storybook|Open the book|Previous pages|page-turn/,
+  );
   const css = readFileSync("src/app/lookbook/lookbook.css", "utf8");
+  assert.match(css, /\.story-feature-sticky\s*\{[^}]*position:\s*sticky/s);
+  assert.match(css, /\.story-flow\s*\{[^}]*grid-template-columns/s);
+  assert.match(css, /@media \(max-width: 1199px\)/);
   assert.match(css, /prefers-reduced-motion: reduce/);
-  assert.match(css, /animation: none/);
-  assert.match(css, /touch-action: pan-y/);
+});
+
+test("collection story remains readable without JavaScript, including when products are unavailable", () => {
+  const renderStory = (catalogue: typeof products) =>
+    renderToStaticMarkup(
+      createElement(
+        CartProvider,
+        null,
+        createElement(CollectionStory, {
+          collection: getCollectionSummary(collection),
+          sections,
+          products: catalogue,
+        }),
+      ),
+    );
+  const markup = renderStory(selected);
+  assert.match(markup, /Some places/);
+  assert.match(markup, /story-no-script/);
+  assert.match(markup, /Product links are listed below/);
+  assert.match(markup, /href="\/product\//);
+  const unavailable = renderStory([]);
+  assert.match(unavailable, /The story is still here to enjoy/);
+  assert.doesNotMatch(unavailable, /Tap a marker|class="story-hotspot"/);
   const page = readFileSync("src/app/lookbook/[collection]/page.tsx", "utf8");
   assert.match(page, /notFound\(\)/);
-  assert.match(page, /getBookSummary\(book\)/);
-  assert.match(page, /<noscript>/);
+  assert.match(page, /getCollectionSummary\(entry\)/);
+  assert.doesNotMatch(page, /display:\s*none/);
 });

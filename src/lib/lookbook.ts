@@ -20,17 +20,17 @@ export type BtsAsset = {
   captions?: string;
   transcript?: string;
 };
-export type StoryPage = {
+export type StorySection = {
   id: string;
-  chapter: string;
-  kind: "cover" | "note" | "photograph" | "shop" | "closing" | "bts";
+  theme: string;
+  kind: "opening" | "note" | "photograph" | "shop" | "closing" | "bts";
   title: string;
   paragraphs?: readonly string[];
   image?: StoryImage;
   secondaryImage?: StoryImage;
   bts?: BtsAsset;
 };
-export type CollectionBook = {
+export type LookbookCollection = {
   slug: string;
   campaignId: string;
   title: string;
@@ -39,9 +39,8 @@ export type CollectionBook = {
   subtitle: string;
   description: string;
   line: "URBAN" | "CORE";
-  coverTitle: readonly [string, string];
-  cover: StoryImage;
-  pages: readonly StoryPage[];
+  libraryImage: StoryImage;
+  sections: readonly StorySection[];
   bts: readonly BtsAsset[];
 };
 
@@ -53,7 +52,7 @@ const river: StoryImage = {
 };
 
 /** Agent-prepared editorial archive. No invented BTS, shoot locations or manufacturing claims. */
-export const collectionBooks: readonly CollectionBook[] = [
+export const lookbookCollections: readonly LookbookCollection[] = [
   {
     slug: "bay-breeze",
     campaignId: "bay-breeze",
@@ -63,22 +62,21 @@ export const collectionBooks: readonly CollectionBook[] = [
     subtitle: "A Godavari state of mind.",
     description: campaign.description,
     line: "URBAN",
-    coverTitle: ["Bay", "Breeze."],
-    cover: river,
-    // Add the owner's real process photographs / films here after approval. Empty means no public BTS chapter.
+    libraryImage: river,
+    // Add the owner's real process photographs / films here after approval. Empty means no public BTS section.
     bts: [],
-    pages: [
+    sections: [
       {
         id: "the-opening",
-        chapter: "The feeling",
-        kind: "cover",
+        theme: "The feeling",
+        kind: "opening",
         title: "Bay Breeze",
         paragraphs: [campaign.description],
         image: river,
       },
       {
         id: "the-river",
-        chapter: "The feeling",
+        theme: "The feeling",
         kind: "note",
         title: "Some places\nstay with you.",
         paragraphs: [
@@ -89,7 +87,7 @@ export const collectionBooks: readonly CollectionBook[] = [
       },
       {
         id: "in-the-world",
-        chapter: "In the world",
+        theme: "In the world",
         kind: "photograph",
         title: "Two colours.\nOne river-side story.",
         image: {
@@ -104,7 +102,7 @@ export const collectionBooks: readonly CollectionBook[] = [
       },
       {
         id: "your-own-pace",
-        chapter: "In the world",
+        theme: "In the world",
         kind: "note",
         title: "A change\nof pace.",
         paragraphs: [
@@ -124,7 +122,7 @@ export const collectionBooks: readonly CollectionBook[] = [
       },
       {
         id: "on-the-back",
-        chapter: "A closer look",
+        theme: "A closer look",
         kind: "photograph",
         title: "A little piece\nof home.",
         image: {
@@ -136,7 +134,7 @@ export const collectionBooks: readonly CollectionBook[] = [
       },
       {
         id: "the-details",
-        chapter: "A closer look",
+        theme: "A closer look",
         kind: "note",
         title: "Home is\nin the details.",
         paragraphs: [
@@ -156,16 +154,16 @@ export const collectionBooks: readonly CollectionBook[] = [
       },
       {
         id: "the-pieces",
-        chapter: "The collection",
+        theme: "The collection",
         kind: "shop",
         title: "Find your\nriver-side story.",
         paragraphs: [
-          "The pieces from these pages. Choose a colour and take a closer look.",
+          "The pieces from this story. Choose a colour and take a closer look.",
         ],
       },
       {
         id: "from-the-river",
-        chapter: "The collection",
+        theme: "The collection",
         kind: "closing",
         title: "From the river,\nwith feeling.",
         paragraphs: [campaign.closingLine],
@@ -180,26 +178,30 @@ export const collectionBooks: readonly CollectionBook[] = [
   },
 ];
 
-export function getCollectionBooks() {
-  return collectionBooks.filter((book) => book.published);
+export function getPublishedCollections() {
+  return lookbookCollections.filter((collection) => collection.published);
 }
-export function getCollectionBook(slug: string) {
-  return getCollectionBooks().find((book) => book.slug === slug);
+export function getPublishedCollection(slug: string) {
+  return getPublishedCollections().find(
+    (collection) => collection.slug === slug,
+  );
 }
 
-export function getBookPages(book: CollectionBook): StoryPage[] {
-  const approved = book.bts.filter(
+export function getStorySections(
+  collection: LookbookCollection,
+): StorySection[] {
+  const approved = collection.bts.filter(
     (asset) =>
       asset.approved &&
       asset.src.trim() &&
       asset.alt.trim() &&
       asset.caption.trim(),
   );
-  if (!approved.length) return [...book.pages];
-  const btsPages: StoryPage[] = [
+  if (!approved.length) return [...collection.sections];
+  const btsSections: StorySection[] = [
     {
       id: "behind-the-scenes",
-      chapter: "Behind the scenes",
+      theme: "Behind the scenes",
       kind: "note",
       title: "Before the\nfinished piece.",
       paragraphs: [
@@ -207,61 +209,64 @@ export function getBookPages(book: CollectionBook): StoryPage[] {
       ],
     },
     ...approved.map(
-      (asset, i): StoryPage => ({
+      (asset, i): StorySection => ({
         id: `making-${i + 1}`,
-        chapter: "Behind the scenes",
+        theme: "Behind the scenes",
         kind: "bts",
         title: asset.caption,
         bts: asset,
       }),
     ),
   ];
-  // Keep complete desktop spreads; leave the actual material untouched.
-  if (btsPages.length % 2)
-    btsPages.push({
-      id: "making-notes",
-      chapter: "Behind the scenes",
-      kind: "note",
-      title: "The story,\nin the making.",
-      paragraphs: ["Original moments from the making of the collection."],
-    });
-  const insertAt = book.pages.findIndex((page) => page.kind === "shop");
+  const insertAt = collection.sections.findIndex(
+    (section) => section.kind === "shop",
+  );
   return [
-    ...book.pages.slice(0, insertAt < 0 ? book.pages.length : insertAt),
-    ...btsPages,
-    ...book.pages.slice(insertAt < 0 ? book.pages.length : insertAt),
+    ...collection.sections.slice(
+      0,
+      insertAt < 0 ? collection.sections.length : insertAt,
+    ),
+    ...btsSections,
+    ...collection.sections.slice(
+      insertAt < 0 ? collection.sections.length : insertAt,
+    ),
   ];
 }
 
-export function getBookProducts(book: CollectionBook, catalogue: Product[]) {
+export function getCollectionProducts(
+  collection: LookbookCollection,
+  catalogue: Product[],
+) {
   const selected =
-    dropCampaigns.find((drop) => drop.id === book.campaignId)?.productSlugs ??
-    [];
+    dropCampaigns.find((drop) => drop.id === collection.campaignId)
+      ?.productSlugs ?? [];
   return selected.flatMap((slug) => {
     const product = catalogue.find((item) => item.slug === slug);
     return product ? [product] : [];
   });
 }
 
-/** Explicit client-safe metadata: never send unpublished BTS material or draft pages. */
-export type BookSummary = Pick<
-  CollectionBook,
+/** Explicit public metadata: never send unpublished BTS material or drafts to the browser. */
+export type CollectionSummary = Pick<
+  LookbookCollection,
   | "slug"
   | "campaignId"
   | "title"
   | "number"
   | "subtitle"
+  | "description"
   | "line"
-  | "coverTitle"
 >;
-export function getBookSummary(book: CollectionBook): BookSummary {
+export function getCollectionSummary(
+  collection: LookbookCollection,
+): CollectionSummary {
   return {
-    slug: book.slug,
-    campaignId: book.campaignId,
-    title: book.title,
-    number: book.number,
-    subtitle: book.subtitle,
-    line: book.line,
-    coverTitle: book.coverTitle,
+    slug: collection.slug,
+    campaignId: collection.campaignId,
+    title: collection.title,
+    number: collection.number,
+    subtitle: collection.subtitle,
+    description: collection.description,
+    line: collection.line,
   };
 }

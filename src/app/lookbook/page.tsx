@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { BrandName } from "@/components/brand-name";
-import { getBookPages, getCollectionBooks } from "@/lib/lookbook";
+import { getPublishedCollections, getStorySections } from "@/lib/lookbook";
 import "./lookbook.css";
 
 export const metadata: Metadata = {
   title: "The Lookbook — Collection stories",
   description:
-    "Open a collection. Explore the inspiration, the details and the pieces in the world. The గMANA lookbook, one story at a time.",
+    "Explore collection stories, inspiration, details and shoppable looks from గMANA.",
   alternates: { canonical: "/lookbook" },
 };
 
 export default function LookbookPage() {
-  const books = getCollectionBooks();
+  const collections = getPublishedCollections();
   return (
     <div className="lookbook-library">
       <header className="container-gamana library-intro">
@@ -29,102 +29,92 @@ export default function LookbookPage() {
           <p>
             A place for the feeling behind the pieces.
             <br />
-            Choose a collection. Open its world.
+            Explore each collection in its own world.
           </p>
         </div>
         <span className="library-count label">
-          The collection library{" "}
-          <span>
-            {String(books.length).padStart(2, "0")} volume
-            {books.length === 1 ? "" : "s"}
-          </span>
+          Collections
+          <span>{String(collections.length).padStart(2, "0")}</span>
         </span>
       </header>
+
       <section
         className="container-gamana library-shelf"
-        aria-label="Collection storybooks"
+        aria-label="Lookbook collections"
       >
-        {books.map((book) => {
-          const pages = getBookPages(book);
-          const chapters = pages.filter(
-            (page, i) => i === 0 || page.chapter !== pages[i - 1].chapter,
+        {collections.map((collection) => {
+          const sections = getStorySections(collection);
+          const themes = sections.filter(
+            (section, index) =>
+              index ===
+              sections.findIndex((item) => item.theme === section.theme),
           );
           return (
-            <article className="library-volume" key={book.slug}>
-              <div className="library-book-stage">
+            <article className="library-collection" key={collection.slug}>
+              <figure className="library-collection-visual">
                 <Link
-                  className="library-book-cover"
-                  href={`/lookbook/${book.slug}`}
-                  aria-label={`Open ${book.title} storybook`}
+                  href={`/lookbook/${collection.slug}`}
+                  className="library-collection-image"
+                  aria-label={`Explore the ${collection.title} collection story`}
                 >
                   <img
-                    src={book.cover.src}
-                    alt={book.cover.alt}
+                    src={collection.libraryImage.src}
+                    alt={collection.libraryImage.alt}
                     fetchPriority="high"
                   />
-                  <span className="library-book-spine" aria-hidden="true" />
-                  <div className="library-cover-heading">
-                    <span className="label">
-                      Collection {book.number} / {book.line}
-                    </span>
-                    <h2>
-                      {book.coverTitle[0]}
-                      <br />
-                      <span>{book.coverTitle[1]}</span>
-                    </h2>
-                    <p>{book.subtitle}</p>
-                  </div>
-                  <div className="library-cover-bottom">
-                    <BrandName />
-                    <span>
-                      Open the book{" "}
-                      <ArrowUpRight size={17} aria-hidden="true" />
-                    </span>
-                  </div>
+                  <span className="library-image-index label">
+                    Collection {collection.number} / {collection.line}
+                  </span>
+                  <span className="library-image-title">
+                    {collection.title}
+                    <ArrowUpRight size={19} aria-hidden="true" />
+                  </span>
                 </Link>
-                <div className="library-book-shadow" aria-hidden="true" />
-              </div>
-              <div className="library-volume-notes">
-                <p className="label library-volume-index">
-                  Volume {book.number} / {pages.length} pages
+                <figcaption>{collection.libraryImage.caption}</figcaption>
+              </figure>
+
+              <div className="library-collection-copy">
+                <p className="label library-collection-index">
+                  Collection {collection.number} / {collection.line}
                 </p>
                 <h2>
-                  <Link href={`/lookbook/${book.slug}`}>
-                    {book.title} <ArrowUpRight size={27} aria-hidden="true" />
+                  <Link href={`/lookbook/${collection.slug}`}>
+                    {collection.title}{" "}
+                    <ArrowUpRight size={26} aria-hidden="true" />
                   </Link>
                 </h2>
-                <p className="library-volume-description">{book.description}</p>
-                <p className="label library-contents-label">
-                  Inside this volume
+                <p className="library-collection-description">
+                  {collection.description}
                 </p>
-                <ol className="library-contents">
-                  {chapters.map((page, i) => (
-                    <li key={page.id}>
-                      <Link href={`/lookbook/${book.slug}#${page.id}`}>
-                        <span>{String(i + 1).padStart(2, "0")}</span>
-                        {page.chapter}
+                <p className="label library-themes-label">Explore the story</p>
+                <ol className="library-themes">
+                  {themes.map((section, index) => (
+                    <li key={section.id}>
+                      <Link href={`/lookbook/${collection.slug}#${section.id}`}>
+                        <span>{String(index + 1).padStart(2, "0")}</span>
+                        {section.theme}
                         <ArrowRight size={14} aria-hidden="true" />
                       </Link>
                     </li>
                   ))}
                 </ol>
                 <Link
-                  href={`/lookbook/${book.slug}`}
-                  className="library-open-button"
+                  href={`/lookbook/${collection.slug}`}
+                  className="library-explore-button"
                 >
-                  <BookOpen size={16} aria-hidden="true" />
-                  Open the storybook
+                  Explore the collection
                   <ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
                 <p className="library-reading-note">
-                  Made to browse slowly. Selected photographs let you shop the
-                  pieces in the story.
+                  Selected photographs open product details, sizes and quick
+                  add.
                 </p>
               </div>
             </article>
           );
         })}
       </section>
+
       <div className="container-gamana library-signoff">
         <span className="label">Culture. Movement. Everyday.</span>
         <p>

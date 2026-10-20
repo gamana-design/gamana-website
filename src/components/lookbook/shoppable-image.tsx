@@ -16,10 +16,12 @@ export function ShoppableImage({
   image,
   products,
   eager = false,
+  className = "",
 }: {
   image: StoryImage;
   products: Product[];
   eager?: boolean;
+  className?: string;
 }) {
   const spots = getAvailableHotspots(image, products);
   const [selected, setSelected] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function ShoppableImage({
   }, [selected]);
 
   return (
-    <figure className="story-photo">
+    <figure className={`story-photo ${className}`.trim()}>
       <div
         ref={frame}
         className="story-photo-frame"

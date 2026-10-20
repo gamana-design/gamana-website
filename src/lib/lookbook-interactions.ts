@@ -1,6 +1,7 @@
 import type { Product } from "@/data/catalog";
 import type { StoryImage } from "./lookbook";
 
+/** Keep product markers aligned with the original, uncropped editorial photograph. */
 export function getAvailableHotspots(
   image: StoryImage,
   products: readonly Product[],
@@ -15,19 +16,4 @@ export function getAvailableHotspots(
       spot.y <= 100 &&
       products.some((product) => product.slug === spot.productSlug),
   );
-}
-
-export function getSpreadStart(
-  index: number,
-  wide: boolean,
-  pageCount: number,
-) {
-  const safe = Math.max(
-    0,
-    Math.min(
-      Math.max(0, pageCount - 1),
-      Number.isFinite(index) ? Math.floor(index) : 0,
-    ),
-  );
-  return wide ? Math.floor(safe / 2) * 2 : safe;
 }

@@ -1,12 +1,14 @@
-import { getCollectionBooks } from "@/lib/lookbook";
 import type { MetadataRoute } from "next";
-
 import { getStoreProducts } from "@/lib/homepage-store";
+import { getPublishedCollections } from "@/lib/lookbook";
 import { getJournalPosts } from "@/lib/site-content";
 import { absoluteUrl } from "@/lib/utils";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, journal] = await Promise.all([getStoreProducts(), getJournalPosts()]);
+  const [products, journal] = await Promise.all([
+    getStoreProducts(),
+    getJournalPosts(),
+  ]);
   const now = new Date();
 
   const staticRoutes = [
@@ -38,6 +40,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  const collectionRoutes = getCollectionBooks().map(book => ({ url: absoluteUrl(`/lookbook/${book.slug}`), changeFrequency: "monthly" as const, priority: 0.6 }));
-  return [...staticRoutes, ...collectionRoutes, ...productRoutes, ...journalRoutes];
+  const collectionRoutes = getPublishedCollections().map((collection) => ({
+    url: absoluteUrl(`/lookbook/${collection.slug}`),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+  return [
+    ...staticRoutes,
+    ...collectionRoutes,
+    ...productRoutes,
+    ...journalRoutes,
+  ];
 }
