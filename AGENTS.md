@@ -65,3 +65,10 @@ These preferences apply to future work on this project as well as the current re
 - Shipping is always free across India, already included in product prices. Never add a minimum spend, shipping upsell, checkout surcharge or price increase to cover shipping. Browser and server use `src/lib/shipping.ts`; preserve historical order snapshots.
 - The Telugu గ is the hero glyph, not an ordinary text initial. It must visibly stand out from MANA everywhere: use the shared outlined, borderless colour-accented `BrandName` / `BrandText` and approved vector/social masters in `docs/GAMANA-Brand-Spec.md`. Retain exact accessible name గMANA and an unbroken wordmark. Only the glyph accent is updated; the wider colour palette remains on hold.
 - This emphasis does not resume the on-hold palette redesign or authorise changing printed garment artwork. External provider names (e.g. Razorpay) remain the exact plain string where custom letter styling is unsupported.
+
+## Lookbook storybooks
+
+- `/lookbook` is the collection library, with agent-prepared volumes at `/lookbook/[collection]`. Bay Breeze is the first published storybook. Do not restore an admin website builder or invent future collections.
+- Use only genuine owner-approved BTS material. Until supplied, keep that chapter hidden; do not relabel campaign images as documentary making-of footage. Keep imagined inspiration imagery clearly described.
+- Shoppable photo markers must map to the exact garment in the image and an available public catalogue product. Never tag accessories not sold, invent product specifications/prices, or expose private supplier fields. Require a real available variant before adding to the existing cart.
+- Preserve desktop spreads, mobile single-page/swipe navigation, keyboard/reduced-motion support and a no-JavaScript reading fallback. See `docs/lookbook-storybooks.md` for the owner workflow and publication rules.

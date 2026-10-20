@@ -1,3 +1,4 @@
+import { getCollectionBooks } from "@/lib/lookbook";
 import type { MetadataRoute } from "next";
 
 import { getStoreProducts } from "@/lib/homepage-store";
@@ -37,5 +38,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...productRoutes, ...journalRoutes];
+  const collectionRoutes = getCollectionBooks().map(book => ({ url: absoluteUrl(`/lookbook/${book.slug}`), changeFrequency: "monthly" as const, priority: 0.6 }));
+  return [...staticRoutes, ...collectionRoutes, ...productRoutes, ...journalRoutes];
 }
