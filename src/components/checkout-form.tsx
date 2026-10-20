@@ -69,6 +69,10 @@ export function CheckoutForm({
 
   const shipping = SHIPPING_FEE;
   const total = subtotal + shipping;
+  const testOnlyLines = lines.filter(
+    (line) => line.testOnly || !line.sku.trim(),
+  );
+  const liveCheckoutBlocked = !testMode && testOnlyLines.length > 0;
 
   const busy = useRef(false);
   const [pending, setPending] = useState<PendingPayment | null>(null);
@@ -126,6 +130,12 @@ export function CheckoutForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy.current || pending) return;
+    if (liveCheckoutBlocked) {
+      setError(
+        "Live checkout is blocked for a test-only product until every variation has a confirmed order SKU. Remove it from your bag to continue.",
+      );
+      return;
+    }
     busy.current = true;
     setState("loading");
     setError("");
@@ -323,6 +333,16 @@ export function CheckoutForm({
             order will be placed.
           </p>
         )}
+        {testOnlyLines.length > 0 && (
+          <p
+            role={liveCheckoutBlocked ? "alert" : "status"}
+            className="mt-4 rounded border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            {liveCheckoutBlocked
+              ? "Live checkout is blocked for test-only products until every variation has a confirmed Qikink order SKU. Remove them from your bag to continue."
+              : "Your bag contains a test-only product. It can be checked out in test mode, but cannot be placed as a live order until all its variation SKUs are confirmed."}
+          </p>
+        )}
         {!onlineEnabled && (
           <p className="mt-4 text-sm text-muted">
             Online payments are not configured yet. Please check back shortly.
@@ -508,6 +528,11 @@ export function CheckoutForm({
                   <p className="mt-1 text-[0.8rem] text-muted">
                     {line.color} · {line.size}
                   </p>
+                  {(line.testOnly || !line.sku.trim()) && (
+                    <span className="mt-1 inline-block text-xs text-amber-800">
+                      Test only · not for live orders
+                    </span>
+                  )}
                 </div>
                 <p className="text-[0.9rem] font-medium tabular-nums">
                   {formatINR(line.price * line.quantity)}
@@ -523,9 +548,7 @@ export function CheckoutForm({
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Shipping</dt>
-              <dd className="tabular-nums">
-                Free · included
-              </dd>
+              <dd className="tabular-nums">Free · included</dd>
             </div>
             <div className="flex justify-between border-t border-line pt-3.5 text-[1.05rem] font-semibold">
               <dt>Total</dt>
@@ -537,7 +560,9 @@ export function CheckoutForm({
 
           <button
             type="submit"
-            disabled={state === "loading" || !onlineEnabled}
+            disabled={
+              state === "loading" || !onlineEnabled || liveCheckoutBlocked
+            }
             className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-full bg-kalam py-4 text-[0.76rem] font-medium uppercase tracking-[0.18em] text-bone transition-transform hover:scale-[1.01] disabled:opacity-60"
           >
             {state === "loading" ? (
@@ -545,6 +570,8 @@ export function CheckoutForm({
                 <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
                 Processing payment…
               </>
+            ) : liveCheckoutBlocked ? (
+              "Test-only items can't be ordered live"
             ) : (
               <>
                 <Lock className="h-4 w-4" strokeWidth={1.8} />

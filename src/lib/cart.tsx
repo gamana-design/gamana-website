@@ -11,6 +11,7 @@ import React, {
 } from "react";
 
 import type { Product, ProductVariant } from "@/data/catalog";
+import { cartLineKey } from "@/lib/cart-line-key";
 
 export interface CartLine {
   key: string;
@@ -21,6 +22,7 @@ export interface CartLine {
   image: string;
   price: number;
   sku: string;
+  testOnly: boolean;
   size: string;
   color: string;
   quantity: number;
@@ -47,11 +49,7 @@ const CartContext = createContext<{
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  add: (
-    product: Product,
-    variant: ProductVariant,
-    quantity?: number,
-  ) => void;
+  add: (product: Product, variant: ProductVariant, quantity?: number) => void;
   remove: (key: string) => void;
   setQuantity: (key: string, quantity: number) => void;
   clear: () => void;
@@ -67,7 +65,10 @@ function reducer(state: CartState, action: CartAction): CartState {
             l.key === action.line.key
               ? {
                   ...l,
-                  quantity: Math.min(l.quantity + action.line.quantity, l.maxQuantity),
+                  quantity: Math.min(
+                    l.quantity + action.line.quantity,
+                    l.maxQuantity,
+                  ),
                 }
               : l,
           ),
@@ -81,7 +82,10 @@ function reducer(state: CartState, action: CartAction): CartState {
       return {
         lines: state.lines.map((l) =>
           l.key === action.key
-            ? { ...l, quantity: Math.max(0, Math.min(action.quantity, l.maxQuantity)) }
+            ? {
+                ...l,
+                quantity: Math.max(0, Math.min(action.quantity, l.maxQuantity)),
+              }
             : l,
         ),
       };
@@ -104,7 +108,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as CartLine[];
-        if (Array.isArray(parsed)) dispatch({ type: "hydrate", lines: parsed });
+        if (Array.isArray(parsed))
+          dispatch({
+            type: "hydrate",
+            lines: parsed.map((line) => ({
+              ...line,
+              key: cartLineKey(line.slug, line.size, line.color),
+              testOnly: line.testOnly ?? !line.sku.trim(),
+            })),
+          });
       }
     } catch {
       // ignore malformed storage
@@ -126,7 +138,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       dispatch({
         type: "add",
         line: {
-          key: `${product.slug}::${variant.sku}`,
+          key: cartLineKey(product.slug, variant.size, variant.color),
           productId: product.id,
           slug: product.slug,
           name: product.name,
@@ -134,6 +146,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           image: product.image,
           price: product.price,
           sku: variant.sku,
+          testOnly: product.variants.some((item) => !item.sku.trim()),
           size: variant.size,
           color: variant.color,
           quantity: Math.min(quantity, 10),
@@ -145,7 +158,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const remove = useCallback((key: string) => dispatch({ type: "remove", key }), []);
+  const remove = useCallback(
+    (key: string) => dispatch({ type: "remove", key }),
+    [],
+  );
   const setQuantity = useCallback(
     (key: string, quantity: number) =>
       dispatch({ type: "quantity", key, quantity }),
@@ -155,7 +171,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => {
     const count = state.lines.reduce((sum, l) => sum + l.quantity, 0);
-    const subtotal = state.lines.reduce((sum, l) => sum + l.quantity * l.price, 0);
+    const subtotal = state.lines.reduce(
+      (sum, l) => sum + l.quantity * l.price,
+      0,
+    );
     return {
       lines: state.lines,
       count,

@@ -1,5 +1,6 @@
 import type { Product } from "@/data/catalog";
 
+import { cartLineKey } from "@/lib/cart-line-key";
 import { SHIPPING_FEE } from "@/lib/shipping";
 export type Customer = {
   fullName: string;
@@ -20,10 +21,39 @@ export class CheckoutError extends Error {
     super(message);
   }
 }
+
+/** Products with any unconfirmed variation SKU are test-only, never live-orderable. */
+export function ensureLiveOrderSkuReadiness(
+  lines: ReadonlyArray<{ product: Product }>,
+  mode: "test" | "live",
+) {
+  if (mode === "test") return;
+
+  const incompleteProducts = new Map<string, string>();
+  for (const { product } of lines) {
+    if (product.variants.some((variant) => !variant.sku.trim()))
+      incompleteProducts.set(product.slug, product.name);
+  }
+  if (!incompleteProducts.size) return;
+
+  const names = [...incompleteProducts.values()];
+  const listedNames = names
+    .slice(0, 3)
+    .map((name) => `“${name}”`)
+    .join(", ");
+  const more = names.length > 3 ? ` and ${names.length - 3} more` : "";
+  throw new CheckoutError(
+    `${listedNames}${more} can only be tested while checkout is in test mode. Live orders are blocked until every variation has a Qikink-confirmed order SKU. Remove these items to continue with live checkout.`,
+    409,
+  );
+}
+
 /** Store policy: new orders must be paid online, regardless of old COD settings. */
 export function validatePayment(value: unknown): "Prepaid" {
   if (value !== "Prepaid")
-    throw new CheckoutError("Please pay online. Cash on delivery is not available.");
+    throw new CheckoutError(
+      "Please pay online. Cash on delivery is not available.",
+    );
   return value;
 }
 
@@ -42,7 +72,9 @@ export function validateCustomer(value: unknown): Customer {
   if (separateNames && (!firstName || !lastName))
     throw new CheckoutError("Please enter your first and last name.");
   const customer: Customer = {
-    fullName: separateNames ? `${firstName} ${lastName}` : text(c.fullName, 100),
+    fullName: separateNames
+      ? `${firstName} ${lastName}`
+      : text(c.fullName, 100),
     email: text(c.email, 254).toLowerCase(),
     phone: text(c.phone, 20).replace(/[\s()-]/g, ""),
     address1: text(c.address1, 90),
@@ -94,7 +126,7 @@ export function priceCart(items: unknown, catalogue: Product[]) {
     )
       throw new CheckoutError("Choose a quantity between 1 and 10.");
     const quantity = Number(i.quantity);
-    const key = `${product.slug}:${variant.sku}`;
+    const key = cartLineKey(product.slug, variant.size, variant.color);
     seen.set(key, (seen.get(key) ?? 0) + quantity);
     if (seen.get(key)! > 10)
       throw new CheckoutError("Maximum 10 of each variant per order.");

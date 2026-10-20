@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Product } from "@/data/catalog";
+import type { AdminProduct } from "@/lib/admin-product";
 import { getAllProducts } from "@/lib/catalog-store";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteProduct } from "@/components/admin/delete-product";
@@ -8,21 +8,13 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false } };
 
 export default async function Products() {
-  let products: Product[] = [];
-  let error = "";
+  let products: AdminProduct[] = [];
+  let error = false;
   try {
-    if (!isSupabaseConfigured())
-      throw new Error(
-        "Supabase is not configured. Check the server environment variables.",
-      );
+    if (!isSupabaseConfigured()) throw new Error("Product storage is not set up.");
     products = await getAllProducts();
-  } catch (cause) {
-    error =
-      cause instanceof Error
-        ? cause.message
-        : typeof cause === "object" && cause !== null && "message" in cause
-          ? String(cause.message)
-          : "Check the Supabase connection and admin schema.";
+  } catch {
+    error = true;
   }
 
   return (
@@ -31,106 +23,112 @@ export default async function Products() {
         <div>
           <h1 className="font-display text-4xl font-bold">Products</h1>
           <p className="mt-2 text-sm text-bone/55">
-            Catalogue, variants and print setup.
+            Add and change the products customers can buy.
           </p>
-          {!error && products.length > 0 && (
-            <p className="mt-2 text-xs text-emerald-300">
-              Products are being read from Supabase.
-            </p>
-          )}
+          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-bone/45">
+            Items marked “For testing only” can be tried in test mode. Live
+            checkout will not accept them until every size has a Qikink-confirmed
+            order code.
+          </p>
         </div>
         <Link
           href="/admin/products/new"
           className="rounded-full bg-ember px-5 py-3 text-xs font-semibold text-kalam"
         >
-          New product
+          Add product
         </Link>
       </div>
+
       {error ? (
         <p
           role="alert"
           className="mt-7 rounded border border-ember/30 p-4 text-sm text-ember"
         >
-          Could not load products: {error}
+          Products could not load. Refresh this page. If the problem continues,
+          please ask for help.
         </p>
       ) : products.length === 0 ? (
         <section className="mt-7 rounded-[4px] border border-bone/10 bg-bone/[.03] p-6">
-          <h2 className="font-display text-xl">Add your first products</h2>
+          <h2 className="font-display text-xl">Add your first product</h2>
           <p className="mb-5 mt-2 text-sm text-bone/60">
-            Create a product, upload its images, and add pricing and variants to
-            start selling.
+            Enter a name and price, add a photo, then choose the sizes you sell.
           </p>
           <Link
             href="/admin/products/new"
             className="inline-block rounded-full bg-ember px-5 py-3 text-xs font-semibold text-kalam"
           >
-            Create product
+            Add product
           </Link>
         </section>
       ) : (
         <div className="mt-7 overflow-x-auto rounded-[4px] border border-bone/10">
-          <table className="w-full min-w-[750px] text-left text-sm">
+          <table className="w-full min-w-[650px] text-left text-sm">
             <thead className="bg-bone/[.04] text-xs uppercase text-bone/50">
               <tr>
-                {[
-                  "Product",
-                  "Line",
-                  "Print id",
-                  "Variants",
-                  "Price",
-                  "Actions",
-                ].map((x) => (
-                  <th key={x} className="p-4">
-                    {x}
-                  </th>
-                ))}
+                {["Product", "Shop status", "Price", "Sizes / colours", "Actions"].map(
+                  (heading) => (
+                    <th key={heading} className="p-4">
+                      {heading}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-bone/10">
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={p.image}
-                        className="h-12 w-12 rounded object-cover"
-                        alt=""
-                      />
-                      <div>
+              {products.map((product) => {
+                const testOnly = product.variants.some(
+                  (variant) => !variant.sku.trim(),
+                );
+                const status =
+                  product.active === false
+                    ? "Hidden"
+                    : testOnly
+                      ? "For testing only"
+                      : "In shop";
+                return (
+                  <tr key={product.id}>
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            className="h-12 w-12 rounded object-cover"
+                            alt=""
+                          />
+                        ) : (
+                          <span className="grid h-12 w-12 place-items-center rounded bg-bone/5 text-xs text-bone/40">
+                            No photo
+                          </span>
+                        )}
                         <Link
-                          href={`/admin/products/${p.id}`}
+                          href={`/admin/products/${product.id}`}
                           className="font-medium hover:text-ember"
                         >
-                          {p.name}
+                          {product.name}
                         </Link>
-                        <p className="text-xs text-bone/45">{p.slug}</p>
                       </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className="rounded-full border border-bone/10 px-3 py-1 text-[10px]">
-                      {p.line}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {(p as Product & { printTypeId?: number }).printTypeId ??
-                      "—"}
-                  </td>
-                  <td className="p-4">{p.variants.length}</td>
-                  <td className="p-4">₹{p.price.toLocaleString("en-IN")}</td>
-                  <td className="p-4">
-                    <div className="flex gap-3">
-                      <Link
-                        href={`/admin/products/${p.id}`}
-                        className="text-xs text-ember"
-                      >
-                        Edit
-                      </Link>
-                      <DeleteProduct id={p.id} name={p.name} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-4">
+                      <span className="rounded-full border border-bone/10 px-3 py-1 text-[10px]">
+                        {status}
+                      </span>
+                    </td>
+                    <td className="p-4">₹{product.price.toLocaleString("en-IN")}</td>
+                    <td className="p-4">{product.variants.length}</td>
+                    <td className="p-4">
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/admin/products/${product.id}`}
+                          className="text-xs text-ember"
+                        >
+                          Change
+                        </Link>
+                        <DeleteProduct id={product.id} name={product.name} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

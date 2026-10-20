@@ -5,6 +5,7 @@ import { resolveSku } from "@/data/catalog";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   CheckoutError,
+  ensureLiveOrderSkuReadiness,
   priceCart,
   validateCustomer,
   validatePayment,
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     const mode = process.env.RAZORPAY_MODE ?? "test";
     if (mode !== "live" && mode !== "test")
       throw new CheckoutError("Checkout is not configured.", 503);
+    ensureLiveOrderSkuReadiness(quote.lines, mode);
     const config = razorpayConfig();
     if (!process.env.RAZORPAY_WEBHOOK_SECRET)
       throw new CheckoutError(

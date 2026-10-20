@@ -12,7 +12,8 @@ import { formatINR } from "@/lib/utils";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function CartDrawer() {
-  const { isOpen, close, lines, subtotal, count, setQuantity, remove } = useCart();
+  const { isOpen, close, lines, subtotal, count, setQuantity, remove } =
+    useCart();
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -65,8 +66,8 @@ export function CartDrawer() {
                   Your bag is empty
                 </p>
                 <p className="max-w-[16rem] text-sm leading-relaxed text-muted">
-                  A little space for your next everyday favourite.
-                  Explore the current collection and find your piece.
+                  A little space for your next everyday favourite. Explore the
+                  current collection and find your piece.
                 </p>
                 <Link
                   href="/shop"
@@ -79,8 +80,13 @@ export function CartDrawer() {
             ) : (
               <>
                 <div className="border-b border-line px-6 py-4">
-                  <p className="flex items-center gap-2 text-sm font-medium"><Truck size={17} aria-hidden="true" />{SHIPPING_HEADLINE}</p>
-                  <p className="mt-2 text-xs leading-relaxed text-muted">{SHIPPING_DETAIL}</p>
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <Truck size={17} aria-hidden="true" />
+                    {SHIPPING_HEADLINE}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted">
+                    {SHIPPING_DETAIL}
+                  </p>
                 </div>
 
                 <ul className="flex-1 overflow-y-auto px-6">
@@ -116,6 +122,11 @@ export function CartDrawer() {
                             <p className="mt-1 text-[0.78rem] text-muted">
                               {line.color} · {line.size}
                             </p>
+                            {(line.testOnly || !line.sku.trim()) && (
+                              <span className="mt-1 inline-block text-xs text-amber-800">
+                                Test only · not for live orders
+                              </span>
+                            )}
                           </div>
                           <button
                             type="button"
@@ -169,7 +180,8 @@ export function CartDrawer() {
                     </span>
                   </div>
                   <p className="mt-1.5 text-[0.75rem] text-muted">
-                    Taxes and shipping included. The price you see is the price you pay.
+                    Taxes and shipping included. The price you see is the price
+                    you pay.
                   </p>
                   <Link
                     href="/checkout"

@@ -88,9 +88,10 @@ export function validateProductDraft(raw: unknown): ProductDraft {
   const d = raw as Record<string, unknown>;
   const name = text(d.name, "Product name", 200);
   const slug = text(d.slug, "Page address", 200);
-  if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
+  if (!name) throw new Error("Please enter the product name.");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
     throw new Error(
-      "Enter a product name and a page address using lowercase words separated by hyphens.",
+      "The product page address is not valid. Use lowercase words separated by hyphens.",
     );
   const qikinkProductId = text(d.qikinkProductId, "Qikink product ID", 50);
   if (qikinkProductId && !/^\d+$/.test(qikinkProductId))
@@ -118,10 +119,10 @@ export function validateProductDraft(raw: unknown): ProductDraft {
     const size = text(v.size, "Size", 50),
       color = text(v.color, "Colour", 100);
     if (!size || !color)
-      throw new Error(`Enter a size and colour for variation ${i + 1}.`);
+      throw new Error(`Add a size and colour for item ${i + 1}.`);
     const key = `${size.toLowerCase()}\0${color.toLowerCase()}`;
     if (seen.has(key))
-      throw new Error(`The ${color} / ${size} variation is listed twice.`);
+      throw new Error(`The ${color} / ${size} option is added twice. Remove one.`);
     seen.add(key);
     const sku = text(v.sku, "Confirmed order SKU", 50);
     const storeSku = text(v.storeSku, "Store SKU", 200);
@@ -150,33 +151,17 @@ export function validateProductDraft(raw: unknown): ProductDraft {
       productCost: money(v.productCost, "Qikink product cost", true),
     };
   });
-  const price = money(d.price, "Selling price")!;
+  const price = money(d.price, "Price")!;
   const image = media(d.image, "Cover photo");
   const active = d.active === true;
   if (active) {
     const missing: string[] = [];
-    const missingOrderSku = variants.filter((variant) => !variant.sku);
-    if (!image) missing.push("a cover photo");
-    if (price <= 0) missing.push("a selling price above ₹0");
-    if (!variants.length) missing.push("at least one variation");
-    if (missingOrderSku.length) {
-      const examples = missingOrderSku
-        .slice(0, 5)
-        .map((variant) => `${variant.color} / ${variant.size}`)
-        .join(", ");
-      const remaining = missingOrderSku.length - 5;
-      const variationSummary =
-        missingOrderSku.length === 1
-          ? `one variation (${examples})`
-          : `${missingOrderSku.length} variations (${examples}${remaining > 0 ? `, and ${remaining} more` : ""})`;
-      missing.push(`a Confirmed order SKU is missing for ${variationSummary}`);
-    }
+    if (!image) missing.push("a main photo");
+    if (price <= 0) missing.push("a price above ₹0");
+    if (!variants.length) missing.push("at least one size");
     if (missing.length) {
-      const orderSkuHelp = missingOrderSku.length
-        ? " The order SKU is the exact code Qikink uses for a submitted order; Product SKU, Design SKU and Store SKU do not fill it automatically. Enter only the identifier Qikink confirms."
-        : "";
       throw new Error(
-        `Can't show this product in the shop yet. Missing: ${missing.join("; ")}.${orderSkuHelp} If the order SKU is not confirmed, save as a draft.`,
+        `This product is not ready to show. Add ${missing.join("; ")}, or keep it hidden while you finish.`,
       );
     }
   }
@@ -270,7 +255,7 @@ export function appendSizeVariants(
   printTypeId: number,
 ): AdminVariant[] {
   if (!color.trim())
-    throw new Error("Enter a base colour before adding sizes.");
+    throw new Error("Enter a colour before adding sizes.");
   const unique = new Set(
     existing.map((v) => `${v.size.toLowerCase()}\0${v.color.toLowerCase()}`),
   );
@@ -292,12 +277,12 @@ export function appendSizeVariants(
       storeSku: "",
       productCost,
       printTypeId,
-      stock: "in",
+      stock: "out",
     });
   }
   if (!additions.length)
     throw new Error(
-      "Enter new sizes, separated by commas. Existing variations are kept unchanged.",
+      "Those sizes are already added. Enter one or more new sizes, separated by commas.",
     );
   return [...existing, ...additions];
 }

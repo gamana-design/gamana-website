@@ -87,6 +87,10 @@ The provider's HMAC authenticates the webhook's original raw body.
   `CHECKOUT_COD_ENABLED` setting no longer enables it.
 - Cart prices, product availability, exact variants and quantity limits are
   revalidated server-side. Unavailable lines are rejected, not silently dropped.
+- Products missing any confirmed order SKU are marked **Test only**. They may be
+  included while checkout is in test mode, but live checkout rejects the whole
+  product before saving an order or creating a Razorpay order. Test payments
+  still never create a Qikink fulfilment order.
 - A pending local order and item snapshots are committed together before
   payment. A per-checkout UUID deduplicates retries with identical details.
 - Razorpay's success callback is not trusted by itself. The server verifies the

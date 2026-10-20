@@ -64,6 +64,19 @@ test("checkout SQL atomically stores snapshots, deduplicates retries and records
     );
     assert.equal(counts.rows[0].count, 1);
     await assert.rejects(create({ ...order, request_fingerprint: "changed" }));
+
+    const testOnlyOrder = {
+      ...order,
+      checkout_key: "00000000-0000-4000-8000-000000000003",
+      order_number: "gmtestonly",
+    };
+    const testOnlyId = await create(testOnlyOrder, [{ ...items[0], sku: "" }]);
+    const storedTestSku = await db.query<{ sku: string }>(
+      "select sku from public.order_items where order_id=$1",
+      [testOnlyId],
+    );
+    assert.equal(storedTestSku.rows[0].sku, "");
+
     // A failure inserting an item rolls back the parent order too.
     const invalid = {
       ...order,

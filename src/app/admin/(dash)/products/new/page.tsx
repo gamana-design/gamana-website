@@ -13,7 +13,7 @@ export default function NewProduct() {
       >
         ← Back to products
       </Link>
-      <h1 className="mb-6 font-display text-4xl font-bold">New product</h1>
+      <h1 className="mb-6 font-display text-4xl font-bold">Add a product</h1>
       <ProductEditor />
     </>
   );

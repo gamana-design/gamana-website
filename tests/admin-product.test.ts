@@ -55,41 +55,39 @@ test("draft keeps the three Qikink references separate without guessing the orde
   assert.equal(d.image, "");
 });
 
-test("product editor keeps the familiar product tasks visible and tucks optional supplier fields away", () => {
+test("product editor uses four plain steps and keeps optional supplier settings out of the way", () => {
   const editor = readFileSync(
     "src/components/admin/product-editor.tsx",
     "utf8",
   );
   for (const label of [
-    'title="Product"',
-    'title="Media"',
-    'title="Status"',
-    'title="Organization"',
+    'title="Name and price"',
+    'title="Add photos"',
+    'title="Add sizes and colours"',
+    'title="Choose where to show it"',
   ]) {
     assert.ok(editor.includes(label), `Missing ${label}`);
   }
-  assert.match(editor, /More product details/);
-  assert.match(editor, /Qikink product details/);
-  assert.match(editor, /Other Qikink references and cost/);
+  assert.match(editor, /max-w-4xl space-y-5/);
+  assert.match(editor, /Qikink and print settings \(optional\)/);
+  assert.match(editor, /Other Qikink details and cost/);
   assert.match(editor, /Confirmed order SKU/);
+  assert.match(editor, /Qikink order code \(optional while testing\)/);
+  assert.match(editor, /Live checkout/i);
+  assert.doesNotMatch(editor, /aria-required=\{d\.active\}/);
 });
 
-test("publication reports missing cover, price and confirmed order SKUs without guessing Qikink codes", () => {
+test("active products may omit order SKUs for testing but still need a photo, price and size", () => {
   assert.throws(
     () => validateProductDraft({ ...fixture(), active: true }),
-    /cover photo.*Confirmed order SKU is missing for one variation \(White \/ S\)/,
-  );
-  assert.throws(
-    () =>
-      validateProductDraft({
-        ...fixture(),
-        image: "/images/cover.jpg",
-        active: true,
-      }),
-    /Qikink uses.*Product SKU, Design SKU and Store SKU do not fill it automatically/,
+    /main photo/,
   );
   const d = fixture();
   d.image = "https://example.com/cover.jpg";
+  const testOnly = validateProductDraft({ ...d, active: true });
+  assert.equal(testOnly.active, true);
+  assert.equal(testOnly.variants![0].sku, "");
+
   d.variants[0].sku = "CONFIRMED-S";
   assert.equal(
     validateProductDraft({ ...d, active: true }).variants![0].sku,
@@ -97,7 +95,11 @@ test("publication reports missing cover, price and confirmed order SKUs without 
   );
   assert.throws(
     () => validateProductDraft({ ...d, active: true, price: 0 }),
-    /selling price above ₹0/,
+    /price above ₹0/,
+  );
+  assert.throws(
+    () => validateProductDraft({ ...d, active: true, variants: [] }),
+    /at least one size/,
   );
 });
 
@@ -118,7 +120,7 @@ test("validates money, print methods, identifiers, media links and duplicate var
   );
   const d = fixture();
   d.variants.push({ ...d.variants[0] });
-  assert.throws(() => validateProductDraft(d), /listed twice/);
+  assert.throws(() => validateProductDraft(d), /added twice/);
   d.variants[1].size = "M";
   assert.throws(() => validateProductDraft(d), /different Store SKU/);
   d.variants[1].storeSku = "v-fixture-medium";
@@ -140,16 +142,17 @@ test("adding sizes keeps existing edits and codes; no default design/stock/price
   assert.deepEqual(added[0], existing[0]);
   assert.equal(added.length, 3);
   assert.equal(added[1].size, "XS");
+  assert.equal(added[1].stock, "out", "new sizes stay unavailable until confirmed");
   assert.equal(added[2].productSku, "UAopUOs-Wh-M");
   assert.equal(added[2].sku, "");
   assert.equal(added[2].storeSku, "");
   assert.throws(
     () => appendSizeVariants(existing, "S", "White", "", "", "", 2),
-    /Existing variations/,
+    /already added/,
   );
   assert.throws(
     () => appendSizeVariants(existing, "M", "", "", "", "", 2),
-    /base colour/,
+    /Enter a colour/,
   );
 });
 
