@@ -550,7 +550,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
       <div className="min-w-0 space-y-5">
         <Section
           title="4. Photos & mockups"
-          hint="Upload your own files. Nothing is fetched automatically from Qikink."
+          hint="Upload your own files; nothing is fetched from Qikink. Files keep their original quality, up to 25 MB each."
         >
           <div>
             <h3 className="mb-2 text-xs text-bone/75">Cover photo</h3>
