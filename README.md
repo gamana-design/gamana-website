@@ -9,3 +9,4 @@ The owner is not a developer. All owner-facing instructions must be plain-langua
 - [Technical checkout reference for developers](docs/razorpay-checkout.md)
 
 - [Drop campaigns and future launches](docs/drop-campaigns.md)
+- [Add products from Qikink — product form guide](docs/admin-product-upload.md)

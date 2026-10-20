@@ -13,12 +13,7 @@ export async function POST(req: Request) {
   if (denied) return denied;
   try {
     const d = await req.json();
-    if (!d.slug || !d.name || !d.image)
-      return NextResponse.json(
-        { error: "Slug, name and image are required." },
-        { status: 400 },
-      );
-    const id = await saveProduct(d);
+    const id = await saveProduct({ ...d, id: undefined });
     revalidateTag("gamana-products");
     return NextResponse.json({ id }, { status: 201 });
   } catch (e) {

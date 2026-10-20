@@ -51,3 +51,11 @@ These preferences apply to future work on this project as well as the current re
 - Use `BrandGlyph` or `/images/brand/ga-glyph.svg` for standalone identity. The outlined master uses Noto Sans Telugu 600 and existing Kalam Ink; Bone backs it on dark surfaces.
 - Do not modify the runner printed on real garments, product photographs or archival artwork. The old runner asset is archival, not the active website symbol.
 - The general brand colour rethink is **on hold**. Do not change palette values or introduce a new colour scheme until the owner resumes it.
+
+## Product upload / Qikink identifiers
+
+- Keep Qikink Product ID/type, per-variation Product SKU, Design SKU, Store SKU and supplier cost as distinct admin fields. A dashboard Design SKU is not the legacy 20-character design code.
+- Photos and mockups are uploaded manually by the owner. Do not infer them from an export or fetch them automatically.
+- Do not guess whether Product SKU or Store SKU should be sent to Qikink. New confirmed order SKUs are entered explicitly after confirmation; existing order SKUs remain unchanged.
+- New products start as hidden drafts. Permit unfinished draft saves; require a cover, positive selling price and explicit order SKUs before shop visibility. Supplier costs stay private.
+- See `docs/admin-product-upload.md` for the owner workflow and the storage migration required before publication.
