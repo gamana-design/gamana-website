@@ -1,4 +1,4 @@
-# గMANA — Brand & Design System Spec v1.3
+# గMANA — Brand & Design System Spec v1.4
 
 *Companion to the GAMANA Brand Identity Document v1.0.*
 *Site: https://gamana-wear.vercel.app · Repo: github.com/gamana-design/gamana-website*
@@ -9,8 +9,9 @@
 
 **The Telugu గ is the hero glyph, not an ordinary initial.** Every new brand
 lockup must visibly highlight it rather than shrink it to match the Latin text.
-The website uses the outlined Telugu master inside a larger Bone badge, with
-Kalam Ink glyph/stroke and a small offset shadow. It scales together with MANA
+The website uses the outlined Telugu master with **no box, border, backing
+badge or shadow**. The glyph stands out using existing Ember Deep `#C94A10`
+on light surfaces and Ember `#F2691E` on dark surfaces. It scales together with MANA
 without wrapping; use `BrandName` / `BrandText` throughout storefront and admin.
 The glyph is font-independent and accessible under the exact name గMANA.
 
@@ -26,7 +27,9 @@ SVGs have outlined letters, no external fonts or images; source letterforms
 are self-hosted Space Grotesk and Noto Sans Telugu (SIL Open Font License).
 These are new branding masters, not replacements for artwork printed on
 products. Existing garment imagery is untouched. The general colour-palette
-rethink remains on hold: use existing Kalam Ink `#0B0B10` and Bone `#F5EDDA`.
+rethink remains on hold: keep existing Kalam Ink `#0B0B10` and Bone `#F5EDDA` surfaces and the
+approved Ember accents. The owner's borderless colour correction supersedes
+the previous ink-only/badged glyph treatment.
 
 **Selling point: “Free shipping across India. Always.”** Delivery is already
 included in every product price, with no minimum spend or extra shipping
@@ -54,8 +57,9 @@ Founded 2026 in Hyderabad, India. Markets: India & USA. Lines: **URBAN** × **CO
 ## 2. Colour
 
 **Owner hold:** a general colour rethink is on hold. Keep the current palette
-unchanged until the owner resumes it. The new glyph uses existing Kalam Ink
-and Bone only; it does not introduce a new colour scheme.
+unchanged until the owner resumes it. The borderless glyph uses the existing
+Ember Deep/Ember accents; this targeted owner correction does not introduce
+a new site colour scheme.
 
 Every value below was **sampled directly from the live brand artwork** in Drive
 (the Godavari tees, the gradient wordmark, the printed posters) — not chosen from
@@ -103,11 +107,11 @@ The primary website wordmark is **గMANA**: the Telugu letter **గ** immediate
 followed by uppercase Latin **MANA**. Do not append a second Telugu sub-line or
 include literal asterisks.
 
-- The Telugu initial uses **Kalam Ink `#0B0B10`**, the primary brand colour.
-- On dark surfaces, a Bone backing preserves the initial's contrast while the
-  Latin letters can follow the light text treatment.
-- Telugu uses the outlined Noto Sans Telugu 600 glyph master in a larger
-  Bone badge with an offset shadow; never shrink it to match Latin cap height.
+- The Telugu glyph uses **Ember Deep `#C94A10`** on light surfaces and
+  **Ember `#F2691E`** on dark surfaces. Keep MANA in the surrounding text colour.
+- Do not add a box, border, backing badge or shadow around the glyph.
+- Telugu uses the outlined Noto Sans Telugu 600 glyph master with borderless colour emphasis;
+  never shrink it into an ordinary text initial.
   The wordmark's Latin letters use Space Grotesk. In prose they can inherit
   the paragraph font. The full name must remain unbroken.
 - The shared `BrandName` and `BrandText` components keep spelling and treatment
@@ -128,8 +132,7 @@ wordmark stays unchanged.
   Telugu 600 (SIL Open Font License), so it renders without a font download.
 - Shared component: `BrandGlyph` in `src/components/brand-name.tsx`.
 - Browser icon: `src/app/icon.png`; home-screen icon: `src/app/apple-icon.png`.
-- Use existing Kalam Ink for the glyph, with existing Bone behind it on dark
-  surfaces. Keep the shape and proportions intact; do not redraw it as a runner.
+- Use the approved Ember tones for the glyph, with no backing badge. Keep the shape and proportions intact; do not redraw it as a runner.
 - `runner-glyph.png` is retained only as an archival source, not an active logo.
 
 Existing brush artwork, original product photography and the old runner are
