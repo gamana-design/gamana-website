@@ -39,6 +39,8 @@ export type LookbookCollection = {
   subtitle: string;
   description: string;
   line: "URBAN" | "CORE";
+  /** Explicit subset for this story; the campaign may include other products. */
+  productSlugs: readonly string[];
   libraryImage: StoryImage;
   sections: readonly StorySection[];
   bts: readonly BtsAsset[];
@@ -62,6 +64,7 @@ export const lookbookCollections: readonly LookbookCollection[] = [
     subtitle: "A Godavari state of mind.",
     description: campaign.description,
     line: "URBAN",
+    productSlugs: ["godavari-tee-sunset", "godavari-tee-lavender"],
     libraryImage: river,
     // Add the owner's real process photographs / films here after approval. Empty means no public BTS section.
     bts: [],
@@ -91,12 +94,12 @@ export const lookbookCollections: readonly LookbookCollection[] = [
         kind: "photograph",
         title: "Two colours.\nOne river-side story.",
         image: {
-          src: "/images/brand/scene-doorway-duo.jpg",
-          alt: "The Sunset Ember and Lavender Dusk Godavari tees styled together",
+          src: "/images/lookbook/bay-breeze-couple-cutout.png",
+          alt: "Two models wearing the Sunset Ember and Lavender Dusk tees, isolated on a transparent background",
           caption: "Sunset Ember & Lavender Dusk / the collection, worn",
           hotspots: [
-            { productSlug: "godavari-tee-lavender", x: 31, y: 37 },
-            { productSlug: "godavari-tee-sunset", x: 66, y: 32 },
+            { productSlug: "godavari-tee-lavender", x: 25, y: 34 },
+            { productSlug: "godavari-tee-sunset", x: 74, y: 34 },
           ],
         },
       },
@@ -110,14 +113,14 @@ export const lookbookCollections: readonly LookbookCollection[] = [
           "The Godavari Tee, in Sunset Ember and Lavender Dusk. Different colours, the same collection story.",
         ],
         image: {
-          src: "/images/brand/model-sunset-front.jpg",
-          alt: "Front of the Sunset Ember Godavari Tee, worn",
-          caption: "Sunset Ember / front view",
+          src: "/images/lookbook/bay-breeze-lavender-cutout.png",
+          alt: "Model wearing the Lavender Dusk Bay Breeze tee",
+          caption: "Lavender Dusk / worn",
         },
         secondaryImage: {
-          src: "/images/brand/model-lavender-front.jpg",
-          alt: "Front of the Lavender Dusk Godavari Tee, worn",
-          caption: "Lavender Dusk / front view",
+          src: "/images/lookbook/bay-breeze-orange-cutout.png",
+          alt: "Model wearing the Sunset Ember Bay Breeze tee",
+          caption: "Sunset Ember / worn",
         },
       },
       {
@@ -129,27 +132,6 @@ export const lookbookCollections: readonly LookbookCollection[] = [
           src: "/images/brand/godavari-lavender-back.jpg",
           alt: "The Godavari-inspired print on the back of the Lavender Dusk tee",
           caption: "Lavender Dusk / a closer look at the back print",
-          hotspots: [{ productSlug: "godavari-tee-lavender", x: 50, y: 46 }],
-        },
-      },
-      {
-        id: "the-details",
-        theme: "A closer look",
-        kind: "note",
-        title: "Home is\nin the details.",
-        paragraphs: [
-          "Colours borrowed from the river. A story carried in the print.",
-          "Look closer: the colour, the linework, the scene across the back. Familiar details, carried somewhere new.",
-        ],
-        image: {
-          src: "/images/brand/detail-violet-fabric.jpg",
-          alt: "Close-up of the Violet Hour printed fabric",
-          caption: "Violet Hour / print detail",
-        },
-        secondaryImage: {
-          src: "/images/brand/detail-violet-collar.jpg",
-          alt: "Close-up of the Violet Hour tee collar",
-          caption: "Violet Hour / collar detail",
         },
       },
       {
@@ -171,7 +153,6 @@ export const lookbookCollections: readonly LookbookCollection[] = [
           src: "/images/brand/scene-lake.jpg",
           alt: campaign.editorialAlt,
           caption: "The Godavari Tee / by the water",
-          hotspots: [{ productSlug: "godavari-tee-sunset", x: 50, y: 48 }],
         },
       },
     ],
@@ -237,9 +218,12 @@ export function getCollectionProducts(
   collection: LookbookCollection,
   catalogue: Product[],
 ) {
-  const selected =
+  const campaignProducts =
     dropCampaigns.find((drop) => drop.id === collection.campaignId)
       ?.productSlugs ?? [];
+  const selected = collection.productSlugs.filter((slug) =>
+    campaignProducts.includes(slug),
+  );
   return selected.flatMap((slug) => {
     const product = catalogue.find((item) => item.slug === slug);
     return product ? [product] : [];

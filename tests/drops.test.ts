@@ -57,7 +57,11 @@ test("ambiguous schedules and invalid dates, colour tokens, and product selectio
 
 test("campaign product selection uses exact real slugs and never includes unrelated products", () => {
   const selected = getDropProducts(baseline, products);
-  assert.equal(selected.length, 3);
+  assert.equal(selected.length, 2);
+  assert.deepEqual(baseline.productSlugs, [
+    "godavari-tee-sunset",
+    "godavari-tee-lavender",
+  ]);
   assert.deepEqual(selected.map(p => p.slug), baseline.productSlugs);
   assert.ok(selected.every(p => p.line === "URBAN"));
   assert.deepEqual(getDropProducts(baseline, []), []);

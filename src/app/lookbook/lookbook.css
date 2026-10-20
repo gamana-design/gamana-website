@@ -414,7 +414,7 @@
 }
 
 .story-photo-feature {
-  width: min(100%, 560px, 52vh);
+  width: min(100%, 560px, 50vh);
   margin: 18px auto 0;
 }
 

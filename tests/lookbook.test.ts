@@ -31,7 +31,7 @@ test("lookbook lists the published Bay Breeze collection only; unknown collectio
   assert.equal(getPublishedCollection("missing"), undefined);
   assert.equal(getPublishedCollection("../bay-breeze"), undefined);
   assert.equal(getPublishedCollection("BAY-BREEZE"), undefined);
-  assert.equal(sections.length, 8);
+  assert.equal(sections.length, 7);
   assert.equal(
     new Set(sections.map((section) => section.id)).size,
     sections.length,
@@ -71,10 +71,19 @@ test("editorial images exist and mappings identify only collection garments, nev
     lavender.x < sunset.x,
     "Lavender is on the left in the source photograph",
   );
+  assert.equal(
+    sections.flatMap((section) => section.image?.hotspots ?? []).length,
+    2,
+    "only the two featured shirts are pinned on the main cutout",
+  );
 });
 
 test("shopping uses only the public catalogue supplied to the collection, without fallback prices or products", () => {
-  assert.equal(selected.length, 3);
+  assert.equal(selected.length, 2);
+  assert.deepEqual(
+    selected.map((product) => product.slug),
+    ["godavari-tee-sunset", "godavari-tee-lavender"],
+  );
   assert.deepEqual(getCollectionProducts(collection, []), []);
   assert.deepEqual(
     getCollectionProducts({ ...collection, campaignId: "missing" }, products),
@@ -113,14 +122,14 @@ test("BTS is hidden until actual approved material is supplied; draft URLs never
     approved: false,
   };
   const fixture: LookbookCollection = { ...collection, bts: [draft] };
-  assert.equal(getStorySections(fixture).length, 8);
+  assert.equal(getStorySections(fixture).length, 7);
   assert.ok(!JSON.stringify(getCollectionSummary(fixture)).includes(draft.src));
   assert.equal(
     getStorySections({
       ...fixture,
       bts: [{ ...draft, approved: true, src: "" }],
     }).length,
-    8,
+    7,
   );
   const approved = {
     ...draft,
@@ -229,6 +238,8 @@ test("Shop the Look is the centered sticky focal point, with story copy flowing 
   assert.match(markup, /story-beat-left/);
   assert.match(markup, /story-beat-right/);
   assert.match(markup, /href="\/product\//);
+  assert.equal((markup.match(/class="story-product-card"/g) ?? []).length, 2);
+  assert.doesNotMatch(markup, /Violet Hour/);
   assert.doesNotMatch(
     markup,
     /storybook|Open the book|Previous pages|page-turn/,
