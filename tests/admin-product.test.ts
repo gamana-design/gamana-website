@@ -55,10 +55,29 @@ test("draft keeps the three Qikink references separate without guessing the orde
   assert.equal(d.image, "");
 });
 
-test("publication requires a photo, positive price and explicit order SKU for every size", () => {
+test("product editor keeps the familiar product tasks visible and tucks optional supplier fields away", () => {
+  const editor = readFileSync(
+    "src/components/admin/product-editor.tsx",
+    "utf8",
+  );
+  for (const label of [
+    'title="Product"',
+    'title="Media"',
+    'title="Status"',
+    'title="Organization"',
+  ]) {
+    assert.ok(editor.includes(label), `Missing ${label}`);
+  }
+  assert.match(editor, /More product details/);
+  assert.match(editor, /Qikink product details/);
+  assert.match(editor, /Other Qikink references and cost/);
+  assert.match(editor, /Confirmed order SKU/);
+});
+
+test("publication reports missing cover, price and confirmed order SKUs without guessing Qikink codes", () => {
   assert.throws(
     () => validateProductDraft({ ...fixture(), active: true }),
-    /Before showing/,
+    /cover photo.*Confirmed order SKU is missing for one variation \(White \/ S\)/,
   );
   assert.throws(
     () =>
@@ -67,7 +86,7 @@ test("publication requires a photo, positive price and explicit order SKU for ev
         image: "/images/cover.jpg",
         active: true,
       }),
-    /confirmed order SKU/,
+    /Qikink uses.*Product SKU, Design SKU and Store SKU do not fill it automatically/,
   );
   const d = fixture();
   d.image = "https://example.com/cover.jpg";
@@ -78,7 +97,7 @@ test("publication requires a photo, positive price and explicit order SKU for ev
   );
   assert.throws(
     () => validateProductDraft({ ...d, active: true, price: 0 }),
-    /Before showing/,
+    /selling price above ₹0/,
   );
 });
 
