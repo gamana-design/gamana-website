@@ -13,7 +13,7 @@
    - **Qikink product cost**: your supplier cost, not your customer's selling price. This stays private in admin.
    - **Availability**: set this yourself; it is not automatically checked with Qikink.
    - **Confirmed order SKU**: leave this blank until Qikink confirms which identifier selects the saved printed variation. The form never guesses or copies one of the other codes here. Existing products keep their existing order SKUs.
-6. Under **Photos & mockups**, upload the cover, gallery photos and optional mockup yourself. **Add gallery photo** adds another upload slot. A separately uploaded mockup is not automatically shown to customers; add it to the cover/gallery too if needed.
+6. Under **Photos & mockups**, upload the cover, gallery photos and optional mockup yourself. **Add gallery photo** adds another upload slot. A separately uploaded mockup is not automatically shown to customers; add it to the cover/gallery too if needed. Each uploaded file must be 4 MB or smaller; resize or compress larger files before uploading.
 7. Leave **Show in shop** off and click **Save draft** while anything is unfinished. Drafts can be saved without a photo or confirmed order codes.
 8. Once ready, add a cover photo, a selling price greater than zero, and a confirmed order SKU for every size. Turn on **Show in shop** and click **Save product**.
 

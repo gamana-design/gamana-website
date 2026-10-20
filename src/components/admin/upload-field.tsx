@@ -1,6 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import {
+  MAX_MEDIA_UPLOAD_BYTES,
+  MAX_MEDIA_UPLOAD_ERROR,
+  parseMediaUploadResponse,
+} from "@/lib/upload-response";
 
 export function UploadField({
   value,
@@ -20,17 +25,20 @@ export function UploadField({
   const [error, setError] = useState("");
   async function upload(file?: File) {
     if (!file || busy) return;
-    setBusy(true);
     setError("");
+    if (file.size > MAX_MEDIA_UPLOAD_BYTES) {
+      setError(MAX_MEDIA_UPLOAD_ERROR);
+      if (ref.current) ref.current.value = "";
+      return;
+    }
+    setBusy(true);
     try {
       const body = new FormData();
       body.set("file", file);
       body.set("folder", folder);
       body.set("label", label);
       const res = await fetch("/api/admin/upload", { method: "POST", body });
-      const result = await res.json();
-      if (!res.ok)
-        throw new Error(result.error || "Upload failed. Please try again.");
+      const result = await parseMediaUploadResponse(res);
       onChange(result.url);
     } catch (e) {
       setError(
