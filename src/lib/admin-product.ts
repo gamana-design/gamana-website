@@ -21,6 +21,24 @@ export type AdminProduct = Omit<Product, "variants"> & {
   heightInches?: number;
 };
 export type ProductDraft = Partial<AdminProduct>;
+
+export function normalizeStoreSku(value: unknown): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+export function countStoreSkuUseCounts(
+  products: ReadonlyArray<{ variants: ReadonlyArray<{ storeSku?: string | null }> }>,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    for (const variant of product.variants) {
+      const sku = normalizeStoreSku(variant.storeSku);
+      if (sku) counts.set(sku, (counts.get(sku) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
 export const printTypes = [
   [1, "DTG / plain"],
   [2, "All-over print (AOP)"],
@@ -81,7 +99,7 @@ function media(value: unknown, label: string): string {
   );
 }
 
-/** Shared client/server validation. Saved references never silently become order SKUs. */
+/** Keep Qikink identifiers separate; live fulfilment uses the confirmed Store SKU. */
 export function validateProductDraft(raw: unknown): ProductDraft {
   if (!raw || typeof raw !== "object" || Array.isArray(raw))
     throw new Error("Please enter product details.");
@@ -110,7 +128,6 @@ export function validateProductDraft(raw: unknown): ProductDraft {
   if (!Array.isArray(d.variants) || d.variants.length > 200)
     throw new Error("Enter up to 200 size and colour variations.");
   const seen = new Set<string>();
-  const orderSkus = new Set<string>();
   const storeSkus = new Set<string>();
   const variants: AdminVariant[] = d.variants.map((raw, i) => {
     if (!raw || typeof raw !== "object")
@@ -124,14 +141,12 @@ export function validateProductDraft(raw: unknown): ProductDraft {
     if (seen.has(key))
       throw new Error(`The ${color} / ${size} option is added twice. Remove one.`);
     seen.add(key);
-    const sku = text(v.sku, "Confirmed order SKU", 50);
+    const sku = text(v.sku, "Legacy order SKU", 50);
     const storeSku = text(v.storeSku, "Store SKU", 200);
-    if (sku && orderSkus.has(sku))
-      throw new Error("Each variation needs a different confirmed order SKU.");
-    if (storeSku && storeSkus.has(storeSku))
+    const storeSkuKey = normalizeStoreSku(storeSku);
+    if (storeSku && storeSkus.has(storeSkuKey))
       throw new Error("Each variation needs a different Store SKU.");
-    if (sku) orderSkus.add(sku);
-    if (storeSku) storeSkus.add(storeSku);
+    if (storeSku) storeSkus.add(storeSkuKey);
     if (!["in", "low", "out"].includes(String(v.stock)))
       throw new Error(`Choose availability for ${color} / ${size}.`);
     const type = Number(v.printTypeId ?? printTypeId);
@@ -235,10 +250,12 @@ export function toStorefrontProduct(p: AdminProduct): Product {
     badge,
     featured,
     isNew,
-    variants: p.variants.map(({ size, color, sku, printTypeId, stock }) => ({
+    variants: p.variants.map(({ size, color, storeSku, printTypeId, stock }) => ({
       size,
       color,
-      sku,
+      // Do not expose the raw supplier SKU in browser-visible catalogue data.
+      sku: "",
+      storeSkuReady: Boolean(storeSku?.trim()),
       printTypeId,
       stock,
     })),

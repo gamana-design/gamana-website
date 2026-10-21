@@ -13,7 +13,16 @@ import { cartLineKey } from "../src/lib/cart-line-key";
 import { paymentMatches, validSignature } from "../src/lib/checkout/signatures";
 import type { Product } from "../src/data/catalog";
 
-const product = { ...legacyProducts[0], id: "fixture", price: 1199 };
+const product = {
+  ...legacyProducts[0],
+  id: "fixture",
+  price: 1199,
+  variants: legacyProducts[0].variants.map((variant) => ({
+    ...variant,
+    sku: "",
+    storeSkuReady: true,
+  })),
+};
 const items = [
   {
     productSlug: product.slug,
@@ -62,10 +71,14 @@ test("shipping is always included in the product price; no additional charge in 
   assert.equal(free.amount, 149900);
 });
 
-test("missing-SKU products can be tested but the whole product is blocked in live mode", () => {
+test("products missing a Store SKU can be tested but the whole product is blocked in live mode", () => {
   const testOnlyProduct: Product = {
     ...product,
-    variants: product.variants.map((variant) => ({ ...variant, sku: "" })),
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      sku: "",
+      storeSkuReady: false,
+    })),
   };
   const testQuote = priceCart(items, [testOnlyProduct]);
   assert.equal(testQuote.lines[0].variant.sku, "");
@@ -80,27 +93,37 @@ test("missing-SKU products can be tested but the whole product is blocked in liv
   const partlyConfiguredProduct: Product = {
     ...product,
     variants: [
-      { ...product.variants[0], sku: "CONFIRMED-S" },
-      { ...product.variants[0], size: "M", sku: "" },
+      { ...product.variants[0], storeSkuReady: true },
+      { ...product.variants[0], size: "M", storeSkuReady: false },
     ],
   };
   const partlyConfiguredQuote = priceCart(items, [partlyConfiguredProduct]);
   assert.throws(
     () => ensureLiveOrderSkuReadiness(partlyConfiguredQuote.lines, "live"),
-    /every variation has a Qikink-confirmed order SKU/,
+    /every size and colour has its unique Store SKU from Qikink/,
   );
   assert.doesNotThrow(() =>
     ensureLiveOrderSkuReadiness(priceCart(items, [product]).lines, "live"),
   );
 });
 
-test("cart identity stays distinct for SKU-less sizes and caps quantities per variation", () => {
+test("cart identity stays distinct for test-only sizes and caps quantities per variation", () => {
   const color = product.variants[0].color;
   const testProduct: Product = {
     ...product,
     variants: [
-      { ...product.variants[0], size: "S", color, sku: "" },
-      { ...product.variants[0], size: "M", color, sku: "" },
+      {
+        ...product.variants[0],
+        size: "S",
+        color,
+        storeSkuReady: false,
+      },
+      {
+        ...product.variants[0],
+        size: "M",
+        color,
+        storeSkuReady: false,
+      },
     ],
   };
   const testLines = [

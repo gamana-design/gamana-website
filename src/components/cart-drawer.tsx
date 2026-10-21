@@ -122,7 +122,7 @@ export function CartDrawer() {
                             <p className="mt-1 text-[0.78rem] text-muted">
                               {line.color} · {line.size}
                             </p>
-                            {(line.testOnly || !line.sku.trim()) && (
+                            {line.testOnly && (
                               <span className="mt-1 inline-block text-xs text-amber-800">
                                 Test only · not for live orders
                               </span>

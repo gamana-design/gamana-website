@@ -45,6 +45,7 @@ export async function fulfilOrder(id: string) {
       total_order_value: String(order.total_order_value),
       line_items: order.order_items.map(
         (item: { sku: string; quantity: number; unit_price: number }) => ({
+          // Qikink confirms search=1 expects the Store SKU saved on the order item.
           search_from_my_products: 1,
           quantity: String(item.quantity),
           sku: item.sku,

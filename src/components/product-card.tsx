@@ -20,7 +20,9 @@ export function ProductCard({
   const soldOut =
     product.variants.length > 0 &&
     product.variants.every((variant) => variant.stock === "out");
-  const testOnly = product.variants.some((variant) => !variant.sku.trim());
+  const testOnly = product.variants.some(
+    (variant) => variant.storeSkuReady !== true,
+  );
 
   return (
     <Link

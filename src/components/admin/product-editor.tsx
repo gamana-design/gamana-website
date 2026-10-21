@@ -117,8 +117,8 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
   const [designSku, setDesignSku] = useState("");
   const [cost, setCost] = useState("");
   const [variantMessage, setVariantMessage] = useState("");
-  const missingOrderSkuCount = d.variants.filter(
-    (variant) => !variant.sku.trim(),
+  const missingStoreSkuCount = d.variants.filter(
+    (variant) => !variant.storeSku?.trim(),
   ).length;
 
   function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
@@ -208,8 +208,8 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
 
       setMessage(
         d.active
-          ? missingOrderSkuCount
-            ? "Saved. It is in your shop for testing only. Live checkout is blocked until every size has a Qikink-confirmed order SKU."
+          ? missingStoreSkuCount
+            ? "Saved. It is in your shop for testing only. Live checkout is blocked until every size has its confirmed Store SKU from Qikink."
             : "Saved. It is shown in your shop."
           : "Saved as a draft. Customers cannot see it.",
       );
@@ -505,24 +505,25 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
                   </div>
                   <details className="mt-4 rounded border border-bone/10 p-3">
                     <summary className="cursor-pointer text-sm text-bone/70">
-                      Qikink order code (optional while testing)
+                      Store SKU for live orders (optional while testing)
                     </summary>
                     <label className="mt-3 block text-sm text-bone/75">
-                      Confirmed order SKU
+                      Store SKU
                       <input
                         className={input}
-                        value={variant.sku}
-                        maxLength={50}
-                        aria-label={`Confirmed order SKU for ${variant.color} / ${variant.size}`}
+                        value={variant.storeSku ?? ""}
+                        maxLength={200}
+                        aria-label={`Store SKU for ${variant.color} / ${variant.size}`}
                         onChange={(event) =>
-                          changeVariant(index, "sku", event.target.value)
+                          changeVariant(index, "storeSku", event.target.value)
                         }
                       />
                     </label>
                     <p className="mt-2 text-xs leading-relaxed text-bone/50">
-                      Only enter the exact code Qikink confirmed for this size.
-                      Leave it empty for testing. Live checkout blocks this
-                      product until every size has its confirmed code.
+                      Enter the exact Store SKU shown in Qikink for this size
+                      and colour. Each option needs its own unique Store SKU.
+                      Leave it empty only while testing; live orders stay blocked
+                      until every option has its Store SKU.
                     </p>
                   </details>
                   <details className="mt-3 rounded border border-bone/10 p-3">
@@ -537,16 +538,6 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
                           value={variant.productSku ?? ""}
                           onChange={(event) =>
                             changeVariant(index, "productSku", event.target.value)
-                          }
-                        />
-                      </label>
-                      <label className="block text-sm text-bone/75">
-                        Store SKU
-                        <input
-                          className={input}
-                          value={variant.storeSku ?? ""}
-                          onChange={(event) =>
-                            changeVariant(index, "storeSku", event.target.value)
                           }
                         />
                       </label>
@@ -662,15 +653,15 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
           </span>
         </label>
 
-        {d.active && missingOrderSkuCount > 0 && (
+        {d.active && missingStoreSkuCount > 0 && (
           <p
             role="status"
             className="rounded border border-amber-500/25 bg-amber-400/5 p-4 text-sm leading-relaxed text-amber-100"
           >
-            For testing only: {missingOrderSkuCount} size
-            {missingOrderSkuCount === 1 ? " is" : "s are"} missing a Qikink-confirmed
-            order SKU. Test orders are not sent to Qikink. Live checkout blocks
-            this product until every size has its confirmed code.
+            For testing only: {missingStoreSkuCount} size
+            {missingStoreSkuCount === 1 ? " is" : "s are"} missing its Store SKU.
+            Test orders are not sent to Qikink. Live checkout blocks this
+            product until every size has its Store SKU.
           </p>
         )}
 
@@ -770,9 +761,9 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
             Qikink and print settings (optional)
           </summary>
           <p className="mt-3 text-xs leading-relaxed text-bone/55">
-            Only change these if you have the details from Qikink. Product SKU,
-            Design SKU, Store SKU and the confirmed order SKU are different
-            codes. They are never copied into one another.
+            Live orders use the Store SKU above. Product SKU and Design SKU are
+            different codes; the form never copies one into another. Only enter
+            values you have confirmed in Qikink.
           </p>
           <div className="mt-4 space-y-5">
             {extraField("Qikink product ID", "qikinkProductId", "text", "Digits only")}

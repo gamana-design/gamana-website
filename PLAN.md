@@ -69,7 +69,7 @@ product is shot on the actual garment, every CORE product on the track.
 | Move Training Short | CORE | `CPSht-Gr-*` | Performance (23) | ₹1,199 |
 | Everyday Performance Hoodie | CORE | `CPHd-On-*` | Performance (23) | ₹2,399 |
 
-Live account SKUs override the table through the `QIKINK_SKU_MAP` env var — no code change.
+For live orders, use the Store SKU saved on each size-and-colour variation. Qikink confirmed that `search_from_my_products=1` uses Store SKU and `=0` uses Product SKU. Never use a product-level map or copy between fields.
 
 ## 3. Integrations
 

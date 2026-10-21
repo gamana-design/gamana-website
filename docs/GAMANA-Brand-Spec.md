@@ -157,8 +157,9 @@ birds, small runner glyph at the chest); back carries the ghat silhouette.
 | Move Training Short | CORE | `CPSht-Gr-*` | Performance (23) | ₹1,199 |
 | Everyday Performance Hoodie | CORE | `CPHd-On-*` | Performance (23) | ₹2,399 |
 
-Sizes run S–XXL on URBAN, S–XL on CORE. Live account SKUs override the table
-via the `QIKINK_SKU_MAP` environment variable — no code change required.
+This table is a historical visual reference, not a source for live order SKUs.
+Qikink confirmed that each size-and-colour option needs its own unique SKU. The
+live website uses the exact Store SKU saved for that option in the admin.
 
 ---
 
