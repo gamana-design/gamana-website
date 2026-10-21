@@ -6,6 +6,9 @@ import {
   validateProductDraft,
   appendSizeVariants,
   toStorefrontProduct,
+  countStoreSkuUseCounts,
+  normalizeStoreSku,
+  type AdminProduct,
 } from "../src/lib/admin-product";
 import {
   productColumns,
@@ -45,7 +48,7 @@ const fixture = () => ({
   ],
 });
 
-test("draft keeps the three Qikink references separate without guessing the order SKU", () => {
+test("draft keeps Product SKU, Store SKU and Design SKU separate", () => {
   const d = validateProductDraft(fixture());
   assert.equal(d.active, false);
   assert.equal(d.variants![0].sku, "");
@@ -53,6 +56,17 @@ test("draft keeps the three Qikink references separate without guessing the orde
   assert.equal(d.variants![0].storeSku, "v-fixture-small");
   assert.equal(d.variants![0].productCost, 378);
   assert.equal(d.image, "");
+});
+
+test("Store SKU uniqueness counts every product and ignores case and surrounding spaces", () => {
+  const counts = countStoreSkuUseCounts([
+    { variants: [{ storeSku: " Store-Blue-S " }, { storeSku: "" }] },
+    { variants: [{ storeSku: "store-blue-s" }, { storeSku: "Store-Blue-M" }] },
+  ]);
+  assert.equal(normalizeStoreSku(" Store-Blue-S "), "store-blue-s");
+  assert.equal(counts.get("store-blue-s"), 2);
+  assert.equal(counts.get("store-blue-m"), 1);
+  assert.equal(counts.has(""), false);
 });
 
 test("product editor uses four plain steps and keeps optional supplier settings out of the way", () => {
@@ -71,28 +85,34 @@ test("product editor uses four plain steps and keeps optional supplier settings 
   assert.match(editor, /max-w-4xl space-y-5/);
   assert.match(editor, /Qikink and print settings \(optional\)/);
   assert.match(editor, /Other Qikink details and cost/);
-  assert.match(editor, /Confirmed order SKU/);
-  assert.match(editor, /Qikink order code \(optional while testing\)/);
+  assert.match(editor, /Store SKU for live orders \(optional while testing\)/);
+  assert.match(editor, /unique Store SKU/);
+  assert.doesNotMatch(editor, /Confirmed order SKU/);
   assert.match(editor, /Live checkout/i);
   assert.doesNotMatch(editor, /aria-required=\{d\.active\}/);
 });
 
-test("active products may omit order SKUs for testing but still need a photo, price and size", () => {
+test("active products may omit Store SKUs for testing but still need a photo, price and size", () => {
   assert.throws(
     () => validateProductDraft({ ...fixture(), active: true }),
     /main photo/,
   );
   const d = fixture();
   d.image = "https://example.com/cover.jpg";
+  d.variants[0].storeSku = "";
   const testOnly = validateProductDraft({ ...d, active: true });
   assert.equal(testOnly.active, true);
-  assert.equal(testOnly.variants![0].sku, "");
+  assert.equal(testOnly.variants![0].storeSku, "");
+  const testOnlyPublic = toStorefrontProduct(testOnly as AdminProduct);
+  assert.equal(testOnlyPublic.variants[0].sku, "");
+  assert.equal(testOnlyPublic.variants[0].storeSkuReady, false);
 
-  d.variants[0].sku = "CONFIRMED-S";
-  assert.equal(
-    validateProductDraft({ ...d, active: true }).variants![0].sku,
-    "CONFIRMED-S",
-  );
+  d.variants[0].storeSku = "STORE-SKU-S";
+  const ready = validateProductDraft({ ...d, active: true });
+  assert.equal(ready.variants![0].storeSku, "STORE-SKU-S");
+  const readyPublic = toStorefrontProduct(ready as AdminProduct);
+  assert.equal(readyPublic.variants[0].sku, "");
+  assert.equal(readyPublic.variants[0].storeSkuReady, true);
   assert.throws(
     () => validateProductDraft({ ...d, active: true, price: 0 }),
     /price above ₹0/,
@@ -122,6 +142,7 @@ test("validates money, print methods, identifiers, media links and duplicate var
   d.variants.push({ ...d.variants[0] });
   assert.throws(() => validateProductDraft(d), /added twice/);
   d.variants[1].size = "M";
+  d.variants[1].storeSku = "V-FIXTURE-SMALL";
   assert.throws(() => validateProductDraft(d), /different Store SKU/);
   d.variants[1].storeSku = "v-fixture-medium";
   d.variants[1].productCost = -1;
@@ -174,14 +195,16 @@ test("database mapping round-trips reference fields and costs while storefront p
     "productCost",
     "productSku",
     "designSku",
-    "storeSku",
     "qikinkProductId",
     "designUrl",
     "mockupUrl",
   ])
     assert.ok(!publicJson.includes(key));
+  assert.ok(!publicJson.includes('"storeSku":'));
   assert.equal(publicProduct.price, 899);
   assert.equal(publicProduct.variants[0].sku, "");
+  assert.equal(publicProduct.variants[0].storeSkuReady, true);
+  assert.ok(!publicJson.includes("v-fixture-small"), "raw Store SKU stays private");
   const legacy = rowToProduct({
     ...row,
     qikink_product_id: undefined,
@@ -191,6 +214,13 @@ test("database mapping round-trips reference fields and costs while storefront p
   });
   assert.equal(legacy.variants[0].sku, "OLD-M");
   assert.equal(legacy.variants[0].productCost, undefined);
+  const publicLegacy = toStorefrontProduct(legacy);
+  assert.equal(
+    publicLegacy.variants[0].sku,
+    "",
+    "the old generic SKU must never become a live Store SKU fallback",
+  );
+  assert.equal(publicLegacy.variants[0].storeSkuReady, false);
 });
 
 test("POST cannot overwrite an existing product by accepting a supplied ID", () => {

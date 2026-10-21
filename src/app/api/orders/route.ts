@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getStoreProducts } from "@/lib/homepage-store";
-import { resolveSku } from "@/data/catalog";
+import { getAllProducts } from "@/lib/catalog-store";
+import { countStoreSkuUseCounts, normalizeStoreSku } from "@/lib/admin-product";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   CheckoutError,
@@ -41,7 +42,11 @@ export async function POST(request: Request) {
         "Invalid checkout session. Please refresh and retry.",
       );
     const customer = validateCustomer(body.customer);
-    const quote = priceCart(body.items, await getStoreProducts());
+    const [storeProducts, adminProducts] = await Promise.all([
+      getStoreProducts(),
+      getAllProducts(),
+    ]);
+    const quote = priceCart(body.items, storeProducts);
     if (body.expectedAmount !== quote.amount)
       throw new CheckoutError(
         "Your bag prices have changed. Please refresh your bag before paying.",
@@ -60,17 +65,39 @@ export async function POST(request: Request) {
     const db = getSupabaseAdmin();
     if (!db)
       throw new CheckoutError("Checkout is temporarily unavailable.", 503);
-    const itemRows = quote.lines.map((l) => ({
-      product_id: l.product.id,
-      product_slug: l.product.slug,
-      product_name: l.product.name,
-      line: l.product.line,
-      sku: resolveSku(l.product.slug, l.variant.sku),
-      size: l.variant.size,
-      color: l.variant.color,
-      quantity: l.quantity,
-      unit_price: l.unitAmount / 100,
-    }));
+    const storeSkuUseCounts = countStoreSkuUseCounts(adminProducts);
+    const itemRows = quote.lines.map((l) => {
+      const storeSku =
+        adminProducts
+          .find((product) => product.slug === l.product.slug)
+          ?.variants.find(
+            (variant) =>
+              variant.size === l.variant.size &&
+              variant.color === l.variant.color,
+          )
+          ?.storeSku?.trim() ?? "";
+      if (
+        mode === "live" &&
+        (!storeSku || storeSkuUseCounts.get(normalizeStoreSku(storeSku)) !== 1)
+      )
+        throw new CheckoutError(
+          "Live checkout is blocked until every size and colour has its own unique Store SKU from Qikink.",
+          409,
+        );
+
+      return {
+        product_id: l.product.id,
+        product_slug: l.product.slug,
+        product_name: l.product.name,
+        line: l.product.line,
+        // Store SKU is read from private admin data, never from the browser.
+        sku: storeSku,
+        size: l.variant.size,
+        color: l.variant.color,
+        quantity: l.quantity,
+        unit_price: l.unitAmount / 100,
+      };
+    });
     const fingerprint = createHash("sha256")
       .update(
         JSON.stringify({

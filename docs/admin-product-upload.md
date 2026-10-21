@@ -6,19 +6,18 @@ The product form has four numbered steps. You can save a hidden draft at any tim
 
 1. Open **Admin → Add product**. Enter the product name, price and an optional description. That price applies to every size. Shipping across India stays free.
 2. Add a **Main photo**. This is the first photo customers see. Photos can be up to 25 MB and keep their original quality. Add more photos only if you want. Upload your own product photos; do not use an image from Qikink as a substitute.
-3. Add the sizes and colour you sell. Enter only the sizes you have confirmed; new sizes start as not for sale. Choose **Yes** under **In stock?** only when that size is ready to sell. You can leave the Qikink order code empty while testing.
-4. Choose **Keep hidden** to save a draft, or **Show in shop** when you are ready. To show a product, it needs a main photo, a price above ₹0 and at least one size.
-5. Press **Save draft** or **Save product**. Check the message under the button to see what happened.
+3. Add the sizes and colour you sell. Enter only sizes you have confirmed; new sizes start as not for sale. Choose **Yes** under **In stock?** only when that size is ready to sell. You can leave the Store SKU empty while testing.
+4. Choose **Keep hidden** to save a draft, or **Show in shop** when you are ready. To show a product, it needs a main photo, a price above ₹0 and at least one size. Press **Save draft** or **Save product**, then check the message under the button.
 
 ### Qikink codes and testing
 
-The **Qikink order code** is used only for a live order. Enter it only after Qikink confirms the exact code for that size. Product SKU, Design SKU and Store SKU are different codes; the form never copies them into the order code.
+For live orders, this website uses the **Store SKU** for each size and colour. Enter the exact Store SKU shown for that option in your Qikink account. Qikink has confirmed that every size-and-colour combination needs its own unique SKU. Product SKU and Design SKU are different and are never copied into the Store SKU.
 
-A product with any missing confirmed order code is marked **For testing only**. It can be used in test checkout while test payments are enabled, but live checkout blocks the whole product until every size has a confirmed order code. Test checkout does not send a print or shipping order to Qikink. Do not guess the code or submit a real order to check it.
+A product with any missing or repeated Store SKU is marked **For testing only**. It can be used in test checkout while test payments are enabled, but live checkout blocks the whole product until every size and colour has its own unique Store SKU. Test checkout does not send a print or shipping order to Qikink. Do not submit a real order just to check a code.
 
-Extra photos, mockups, categories and other less-used product settings are optional. Supplier codes and print-file settings are tucked away under **Qikink and print settings**. Leave those alone unless you have the correct information.
+Extra photos, mockups, categories and other less-used product settings are optional. Product SKU and print-file settings are tucked away under **Qikink and print settings**. Leave those alone unless you have the correct information.
 
-**Saving a product does not send a Qikink order, charge money, or change payment mode.** There is no real-order button on this form. The separate existing admin Qikink API is unchanged.
+**Saving a product does not send a Qikink order, charge money, or change payment mode.** There is no order button on this form. The separate admin Qikink API remains separate; when it uses `search_from_my_products=0`, it sends Product SKU.
 
 The CSV discussed with the owner is only a summary. This form does not import it or fill in missing photos, variant codes, stock or prices automatically. Any placeholders are examples, not imported values.
 
@@ -30,7 +29,8 @@ The CSV discussed with the owner is only a summary. This form does not import it
 - It enables RLS and revokes browser-role access to the two catalogue tables to protect supplier costs. Storefront reads continue through the existing server-side service-role client. Verify any existing policies/integrations before rollout.
 - The save function is executable only by `service_role`. The existing authenticated admin routes validate the whole draft before invoking it. It saves the product and variations together or rolls everything back.
 - Image files are not sent through the serverless admin route. The authenticated route issues a one-file signed Storage upload ticket; the browser then sends the original file directly to the public `gamana-media` bucket. The service-role key stays server-side. The admin form validates file type and caps files at 25 MB; the Storage bucket enforces the same 25 MB maximum.
-- Public catalogue projection excludes supplier costs, Qikink references and admin-only print file settings. The established `sku` field is unchanged; Product SKU and Store SKU do not automatically become fulfilment SKUs.
-- Products with any blank confirmed order SKU may be Active for testing. The storefront labels them **Test only**; the order API blocks the whole product in live mode before saving an order or creating a Razorpay order. Test-mode fulfilment exits before Qikink. This uses the existing schema and changes no product data.
+- The public catalogue never includes raw Store SKU, Product SKU, Design SKU, supplier cost or print-file settings; it exposes only whether each variation has a unique Store SKU. The live order API reads the matching Store SKU from private admin data because live fulfilment uses `search_from_my_products=1`. The older `sku` database column is preserved but is never a live-order fallback.
+- This mapping reuses the existing `store_sku` column. It needs no new database migration and does not rewrite product records or historical orders.
+- Products with a blank or repeated Store SKU may be Active for testing. The storefront labels them **Test only**; the order API blocks the whole product in live mode before saving an order or creating a Razorpay order. The admin save path rejects new duplicates across products, and live checkout checks existing catalogue values. Test-mode fulfilment exits before Qikink. No product data is changed by this mapping update.
 - `npm test` includes real in-memory Postgres migration/rollback/access tests. Browser QA used an isolated local database and synthetic products; it did not touch Supabase, Qikink, Razorpay or production records.
 - For future fresh installations, apply the storage migration before deploying this form. Do not activate live payments or alter the paused colour scheme.

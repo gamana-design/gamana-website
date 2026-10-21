@@ -1,5 +1,9 @@
 import Link from "next/link";
-import type { AdminProduct } from "@/lib/admin-product";
+import {
+  countStoreSkuUseCounts,
+  normalizeStoreSku,
+  type AdminProduct,
+} from "@/lib/admin-product";
 import { getAllProducts } from "@/lib/catalog-store";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteProduct } from "@/components/admin/delete-product";
@@ -17,6 +21,8 @@ export default async function Products() {
     error = true;
   }
 
+  const storeSkuUseCounts = countStoreSkuUseCounts(products);
+
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -27,8 +33,8 @@ export default async function Products() {
           </p>
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-bone/45">
             Items marked “For testing only” can be tried in test mode. Live
-            checkout will not accept them until every size has a Qikink-confirmed
-            order code.
+            checkout needs a different Store SKU from Qikink for every size and
+            colour.
           </p>
         </div>
         <Link
@@ -76,9 +82,10 @@ export default async function Products() {
             </thead>
             <tbody className="divide-y divide-bone/10">
               {products.map((product) => {
-                const testOnly = product.variants.some(
-                  (variant) => !variant.sku.trim(),
-                );
+                const testOnly = product.variants.some((variant) => {
+                  const sku = normalizeStoreSku(variant.storeSku);
+                  return !sku || storeSkuUseCounts.get(sku) !== 1;
+                });
                 const status =
                   product.active === false
                     ? "Hidden"

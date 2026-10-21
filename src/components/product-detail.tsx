@@ -26,13 +26,15 @@ export function ProductDetail({
 
   const activeVariant =
     product.variants.find((v) => v.size === size) ?? product.variants[0];
-  const testOnly = product.variants.some((variant) => !variant.sku.trim());
+  const testOnly = product.variants.some(
+    (variant) => variant.storeSkuReady !== true,
+  );
   const liveUnavailable = liveMode && testOnly;
 
   function onAdd() {
     if (liveUnavailable) {
       setError(
-        "This product cannot be ordered live until every variation has a confirmed order SKU.",
+        "This product cannot be ordered live until every size and colour has its Store SKU from Qikink.",
       );
       return;
     }
@@ -138,8 +140,8 @@ export function ProductDetail({
             className="mt-5 rounded-[3px] border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900"
           >
             {liveMode
-              ? "Testing item — live orders are blocked until every variation has a Qikink-confirmed order SKU."
-              : "Testing item — live orders are blocked until every variation has a Qikink-confirmed order SKU. Test checkout will not create a Qikink print or shipping order."}
+              ? "Testing item — live orders are blocked until every size and colour has its unique Store SKU from Qikink."
+              : "Testing item — live orders are blocked until every size and colour has its unique Store SKU from Qikink. Test checkout will not create a Qikink print or shipping order."}
           </p>
         )}
 

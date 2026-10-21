@@ -7,6 +7,8 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   validateProductDraft,
   toStorefrontProduct,
+  countStoreSkuUseCounts,
+  normalizeStoreSku,
   type AdminProduct,
   type ProductDraft,
 } from "./admin-product";
@@ -38,11 +40,29 @@ export async function getAllProducts(): Promise<AdminProduct[]> {
 export async function getProducts(): Promise<Product[]> {
   if (isDesignPreview())
     return brandContent((await import("@/data/legacy-catalog")).products);
-  return brandContent(
-    (await readRows())
-      ?.filter((p) => p.active !== false)
-      .map(toStorefrontProduct) ?? [],
-  );
+
+  const rows = await readRows();
+  if (!rows) return [];
+
+  const storeSkuUseCounts = countStoreSkuUseCounts(rows);
+
+  const products = rows
+    .filter((product) => product.active !== false)
+    .map((product) => {
+      const storefrontProduct = toStorefrontProduct(product);
+      return {
+        ...storefrontProduct,
+        variants: storefrontProduct.variants.map((variant, index) => {
+          const sku = normalizeStoreSku(product.variants[index].storeSku);
+          return {
+            ...variant,
+            storeSkuReady: Boolean(sku) && storeSkuUseCounts.get(sku) === 1,
+          };
+        }),
+      };
+    });
+
+  return brandContent(products);
 }
 export async function getProductBySlug(slug: string) {
   return (await getProducts()).find((p) => p.slug === slug);
@@ -59,6 +79,29 @@ export async function saveProduct(raw: ProductDraft) {
     );
   const c = productColumns(d);
   const rows = variantColumns(d);
+  const storeSkuKeys = new Set(
+    (d.variants ?? [])
+      .map((variant) => normalizeStoreSku(variant.storeSku))
+      .filter(Boolean),
+  );
+  if (storeSkuKeys.size) {
+    let skuQuery = db
+      .from("gamana_product_variants")
+      .select("product_id, store_sku");
+    if (raw.id) skuQuery = skuQuery.neq("product_id", raw.id);
+    const { data: existingVariants, error: skuError } = await skuQuery;
+    if (skuError)
+      throw new Error(
+        "Could not check Store SKU uniqueness. Nothing has been saved.",
+      );
+    const duplicate = existingVariants?.some((variant) =>
+      storeSkuKeys.has(normalizeStoreSku(variant.store_sku)),
+    );
+    if (duplicate)
+      throw new Error(
+        "A Store SKU is already used by another product. Give every size and colour its own unique Store SKU.",
+      );
+  }
   const { data, error } = await db.rpc("gamana_save_product", {
     p_product: c,
     p_variants: rows,

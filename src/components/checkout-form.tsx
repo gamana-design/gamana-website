@@ -69,9 +69,7 @@ export function CheckoutForm({
 
   const shipping = SHIPPING_FEE;
   const total = subtotal + shipping;
-  const testOnlyLines = lines.filter(
-    (line) => line.testOnly || !line.sku.trim(),
-  );
+  const testOnlyLines = lines.filter((line) => line.testOnly);
   const liveCheckoutBlocked = !testMode && testOnlyLines.length > 0;
 
   const busy = useRef(false);
@@ -132,7 +130,7 @@ export function CheckoutForm({
     if (busy.current || pending) return;
     if (liveCheckoutBlocked) {
       setError(
-        "Live checkout is blocked for a test-only product until every variation has a confirmed order SKU. Remove it from your bag to continue.",
+        "Live checkout is blocked until every size and colour has its Store SKU from Qikink. Remove this test-only item from your bag to continue.",
       );
       return;
     }
@@ -339,8 +337,8 @@ export function CheckoutForm({
             className="mt-4 rounded border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900"
           >
             {liveCheckoutBlocked
-              ? "Live checkout is blocked for test-only products until every variation has a confirmed Qikink order SKU. Remove them from your bag to continue."
-              : "Your bag contains a test-only product. It can be checked out in test mode, but cannot be placed as a live order until all its variation SKUs are confirmed."}
+              ? "Live checkout is blocked until every size and colour has its Store SKU from Qikink. Remove the test-only items from your bag to continue."
+              : "Your bag contains a test-only product. It can be checked out in test mode, but not as a live order until every size and colour has its Store SKU from Qikink."}
           </p>
         )}
         {!onlineEnabled && (
@@ -528,7 +526,7 @@ export function CheckoutForm({
                   <p className="mt-1 text-[0.8rem] text-muted">
                     {line.color} · {line.size}
                   </p>
-                  {(line.testOnly || !line.sku.trim()) && (
+                  {line.testOnly && (
                     <span className="mt-1 inline-block text-xs text-amber-800">
                       Test only · not for live orders
                     </span>

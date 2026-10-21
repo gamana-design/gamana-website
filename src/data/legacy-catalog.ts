@@ -1,18 +1,7 @@
 /**
- * GAMANA catalogue.
- *
- * Every product carries the Qikink SKU it fulfils from, so an order placed on
- * the site can be pushed straight to `POST /api/order/create` for printing and
- * shipping.
- *
- * Drop 01 is the Godavari study: one graphic, three colourways — Sunset
- * Ember, Lavender Dusk and Violet Hour — cut from the artwork in the studio
- * and printed on demand.
- *
- * SKUs follow Qikink's `<code>-<colour>-<size>` convention. If the live
- * Qikink account uses different codes, set `QIKINK_SKU_MAP` to a JSON object of
- * `{ "<product-slug>": "<sku>" }` in the environment — it overrides the
- * catalogue without a code change.
+ * Historical catalogue examples used only by the explicit local design preview.
+ * These sample SKUs are not live order values. Production live checkout uses
+ * the confirmed Store SKU saved for each size-and-colour option in admin.
  */
 
 export type ProductLine = "URBAN" | "CORE";
@@ -331,20 +320,4 @@ export function getFeatured(limit = 4): Product[] {
 
 export function getByLine(line: ProductLine): Product[] {
   return products.filter((p) => p.line === line);
-}
-
-/**
- * SKU resolution.
- * `QIKINK_SKU_MAP` lets the live account's real SKU codes replace the
- * catalogue defaults without a redeploy of the catalogue itself.
- */
-export function resolveSku(productSlug: string, fallback: string): string {
-  const raw = process.env.QIKINK_SKU_MAP;
-  if (!raw) return fallback;
-  try {
-    const map = JSON.parse(raw) as Record<string, string>;
-    return map[productSlug] ?? fallback;
-  } catch {
-    return fallback;
-  }
 }

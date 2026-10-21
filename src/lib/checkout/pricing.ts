@@ -22,7 +22,7 @@ export class CheckoutError extends Error {
   }
 }
 
-/** Products with any unconfirmed variation SKU are test-only, never live-orderable. */
+/** Products missing a confirmed Store SKU are test-only, never live-orderable. */
 export function ensureLiveOrderSkuReadiness(
   lines: ReadonlyArray<{ product: Product }>,
   mode: "test" | "live",
@@ -31,7 +31,7 @@ export function ensureLiveOrderSkuReadiness(
 
   const incompleteProducts = new Map<string, string>();
   for (const { product } of lines) {
-    if (product.variants.some((variant) => !variant.sku.trim()))
+    if (product.variants.some((variant) => variant.storeSkuReady !== true))
       incompleteProducts.set(product.slug, product.name);
   }
   if (!incompleteProducts.size) return;
@@ -43,7 +43,7 @@ export function ensureLiveOrderSkuReadiness(
     .join(", ");
   const more = names.length > 3 ? ` and ${names.length - 3} more` : "";
   throw new CheckoutError(
-    `${listedNames}${more} can only be tested while checkout is in test mode. Live orders are blocked until every variation has a Qikink-confirmed order SKU. Remove these items to continue with live checkout.`,
+    `${listedNames}${more} can only be tested while checkout is in test mode. Live orders are blocked until every size and colour has its unique Store SKU from Qikink. Remove these items to continue with live checkout.`,
     409,
   );
 }

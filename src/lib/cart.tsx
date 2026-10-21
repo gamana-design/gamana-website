@@ -22,6 +22,7 @@ export interface CartLine {
   image: string;
   price: number;
   sku: string;
+  storeSkuReady: boolean;
   testOnly: boolean;
   size: string;
   color: string;
@@ -111,11 +112,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(parsed))
           dispatch({
             type: "hydrate",
-            lines: parsed.map((line) => ({
-              ...line,
-              key: cartLineKey(line.slug, line.size, line.color),
-              testOnly: line.testOnly ?? !line.sku.trim(),
-            })),
+            lines: parsed.map((line) => {
+              const storeSkuReady = line.storeSkuReady === true;
+              return {
+                ...line,
+                key: cartLineKey(line.slug, line.size, line.color),
+                // Keep Qikink identifiers out of the browser cart. Old cart
+                // entries have no readiness marker, so require a fresh add.
+                sku: "",
+                storeSkuReady,
+                testOnly: !storeSkuReady || line.testOnly === true,
+              };
+            }),
           });
       }
     } catch {
@@ -145,8 +153,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           line: product.line,
           image: product.image,
           price: product.price,
-          sku: variant.sku,
-          testOnly: product.variants.some((item) => !item.sku.trim()),
+          sku: "",
+          storeSkuReady: product.variants.every(
+            (item) => item.storeSkuReady === true,
+          ),
+          testOnly: product.variants.some(
+            (item) => item.storeSkuReady !== true,
+          ),
           size: variant.size,
           color: variant.color,
           quantity: Math.min(quantity, 10),
