@@ -3,6 +3,8 @@ import { CheckoutForm } from "@/components/checkout-form";
 import { PageRenderer } from "@/components/site-content/page-renderer";
 import { getSitePage } from "@/lib/site-content";
 import { razorpayConfig } from "@/lib/checkout/razorpay";
+import { OrderPasswordGate } from "@/components/order-password-gate";
+import { hasOrderAccess, isOrderPasswordConfigured } from "@/lib/order-access";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Checkout",
@@ -17,16 +19,25 @@ export default async function CheckoutPage() {
   } catch {
     /* fail closed until configured */
   }
+  const orderPasswordConfigured = isOrderPasswordConfigured();
+  const canOrder = orderPasswordConfigured && (await hasOrderAccess());
+
   return (
     <>
       {page && <PageRenderer page={page} />}
       <section className="checkout-brand bg-bone py-8 md:py-12">
         <div className="container-gamana">
-          <nav aria-label="Checkout steps" className="checkout-stage"><span>01 / Your bag</span><span aria-hidden="true" /><span className="current" aria-current="step">02 / Delivery & payment</span></nav>
-          <CheckoutForm
-            testMode={process.env.RAZORPAY_MODE !== "live"}
-            onlineEnabled={onlineEnabled}
-          />
+          {canOrder ? (
+            <>
+              <nav aria-label="Checkout steps" className="checkout-stage"><span>01 / Your bag</span><span aria-hidden="true" /><span className="current" aria-current="step">02 / Delivery & payment</span></nav>
+              <CheckoutForm
+                testMode={process.env.RAZORPAY_MODE !== "live"}
+                onlineEnabled={onlineEnabled}
+              />
+            </>
+          ) : (
+            <OrderPasswordGate configured={orderPasswordConfigured} />
+          )}
         </div>
       </section>
     </>
