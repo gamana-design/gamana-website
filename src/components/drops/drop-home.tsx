@@ -44,7 +44,7 @@ export function DropHome({ campaign: c, products }: { campaign: DropCampaign; pr
     <section id="the-drop" className="bay-products container-gamana">
       <div className="bay-section-heading"><div><p className="label">02 / The collection</p><h2>A change of pace.</h2></div><p>The Godavari, reimagined.<br />Find your everyday escape.</p></div>
       {products.length ? <div className="bay-product-grid">{products.map((p, i) => <Reveal key={p.id} delay={i * 0.08}><ProductCard product={p} index={i} /></Reveal>)}</div> : <div className="drop-empty"><p>The pieces are being prepared for the shop.</p><Link href="/shop" className="editorial-link">Explore <BrandName /> <ArrowRight size={17} /></Link></div>}
-      <div className="bay-collection-link"><Link href={`/shop?drop=${c.id}`} className="editorial-link">View the full collection <ArrowUpRight size={17} /></Link><span className="label">Designed to go with you.</span></div>
+      <div className="bay-collection-link"><Link href="/shop" className="editorial-link">View all available pieces <ArrowUpRight size={17} /></Link><span className="label">Designed to go with you.</span></div>
     </section>
 
     <section className="bay-editorial" aria-label="Campaign editorial">

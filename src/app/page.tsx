@@ -2,8 +2,9 @@ import { BrandName } from "@/components/brand-name";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DropHome } from "@/components/drops/drop-home";
-import { getDropProducts, getDropSchedule } from "@/lib/drops";
+import { getDropSchedule } from "@/lib/drops";
 import { getStoreProducts } from "@/lib/homepage-store";
+import { sortStorefrontProducts } from "@/lib/product-order";
 
 export const dynamic = "force-dynamic";
 export function generateMetadata(): Metadata {
@@ -13,5 +14,6 @@ export function generateMetadata(): Metadata {
 export default async function HomePage() {
   const { active } = getDropSchedule();
   if (!active) return <section className="container-gamana py-28"><p className="label text-ember"><BrandName /> / The next chapter</p><h1 className="mt-6 text-6xl">Something is taking shape.</h1><p className="mt-5 text-muted">Explore the pieces available in the meantime.</p><Link className="brand-button mt-8" href="/shop">Explore the shop</Link></section>;
-  return <DropHome campaign={active} products={getDropProducts(active, await getStoreProducts())} />;
+  const products = sortStorefrontProducts(await getStoreProducts());
+  return <DropHome campaign={active} products={products} />;
 }

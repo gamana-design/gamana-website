@@ -43,7 +43,8 @@ export async function GET() {
     },
     {
       headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        // Prices feed checkout; do not let an edge cache keep an old catalogue.
+        "Cache-Control": "no-store",
       },
     },
   );

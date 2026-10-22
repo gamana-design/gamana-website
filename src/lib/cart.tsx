@@ -7,10 +7,12 @@ import React, {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 
 import type { Product, ProductVariant } from "@/data/catalog";
+import { reconcileCartCatalogue } from "@/lib/cart-catalog";
 import { cartLineKey } from "@/lib/cart-line-key";
 
 export interface CartLine {
@@ -24,6 +26,7 @@ export interface CartLine {
   sku: string;
   storeSkuReady: boolean;
   testOnly: boolean;
+  unavailable?: boolean;
   size: string;
   color: string;
   quantity: number;
@@ -39,7 +42,15 @@ type CartAction =
   | { type: "remove"; key: string }
   | { type: "quantity"; key: string; quantity: number }
   | { type: "clear" }
-  | { type: "hydrate"; lines: CartLine[] };
+  | { type: "hydrate"; lines: CartLine[] }
+  | { type: "catalogue"; products: Product[] };
+
+export type CartCatalogueRefresh = {
+  ok: boolean;
+  priceChanged: boolean;
+  readinessChanged: boolean;
+  hasUnavailable: boolean;
+};
 
 const STORAGE_KEY = "gamana.bag.v1";
 
@@ -48,6 +59,8 @@ const CartContext = createContext<{
   count: number;
   subtotal: number;
   isOpen: boolean;
+  hydrated: boolean;
+  refreshCatalogue: () => Promise<CartCatalogueRefresh>;
   open: () => void;
   close: () => void;
   add: (product: Product, variant: ProductVariant, quantity?: number) => void;
@@ -66,9 +79,10 @@ function reducer(state: CartState, action: CartAction): CartState {
             l.key === action.line.key
               ? {
                   ...l,
+                  ...action.line,
                   quantity: Math.min(
                     l.quantity + action.line.quantity,
-                    l.maxQuantity,
+                    action.line.maxQuantity,
                   ),
                 }
               : l,
@@ -94,6 +108,10 @@ function reducer(state: CartState, action: CartAction): CartState {
       return { lines: [] };
     case "hydrate":
       return { lines: action.lines };
+    case "catalogue":
+      return {
+        lines: reconcileCartCatalogue(state.lines, action.products).lines,
+      };
     default:
       return state;
   }
@@ -103,6 +121,45 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { lines: [] });
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const currentLines = useRef(state.lines);
+  currentLines.current = state.lines;
+  const refreshInFlight = useRef<Promise<CartCatalogueRefresh> | null>(null);
+
+  const refreshCatalogue = useCallback(() => {
+    if (refreshInFlight.current) return refreshInFlight.current;
+    if (!currentLines.current.length)
+      return Promise.resolve({
+        ok: true,
+        priceChanged: false,
+        readinessChanged: false,
+        hasUnavailable: false,
+      });
+
+    const request = (async (): Promise<CartCatalogueRefresh> => {
+      try {
+        const response = await fetch("/api/products", { cache: "no-store" });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !Array.isArray(data?.products))
+          throw new Error("Catalogue refresh failed.");
+        const products = data.products as Product[];
+        const result = reconcileCartCatalogue(currentLines.current, products);
+        dispatch({ type: "catalogue", products });
+        return { ok: true, ...result };
+      } catch {
+        return {
+          ok: false,
+          priceChanged: false,
+          readinessChanged: false,
+          hasUnavailable: false,
+        };
+      } finally {
+        refreshInFlight.current = null;
+      }
+    })();
+
+    refreshInFlight.current = request;
+    return request;
+  }, []);
 
   useEffect(() => {
     try {
@@ -160,6 +217,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           testOnly: product.variants.some(
             (item) => item.storeSkuReady !== true,
           ),
+          unavailable: false,
           size: variant.size,
           color: variant.color,
           quantity: Math.min(quantity, 10),
@@ -193,6 +251,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       count,
       subtotal,
       isOpen,
+      hydrated,
+      refreshCatalogue,
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
       add,
@@ -200,7 +260,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setQuantity,
       clear,
     };
-  }, [state.lines, isOpen, add, remove, setQuantity, clear]);
+  }, [state.lines, isOpen, hydrated, refreshCatalogue, add, remove, setQuantity, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

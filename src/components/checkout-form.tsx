@@ -37,7 +37,12 @@ export function CheckoutForm({
   testMode?: boolean;
   onlineEnabled?: boolean;
 }) {
-  const { lines, subtotal, clear, count } = useCart();
+  const { lines, subtotal, clear, count, hydrated, refreshCatalogue } = useCart();
+  const [priceCheck, setPriceCheck] = useState<"checking" | "ready" | "failed">(
+    "checking",
+  );
+  const [priceCheckAttempt, setPriceCheckAttempt] = useState(0);
+  const [priceNotice, setPriceNotice] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -67,9 +72,35 @@ export function CheckoutForm({
     };
   }
 
+  useEffect(() => {
+    if (!hydrated) return;
+    let cancelled = false;
+    setPriceCheck("checking");
+    void refreshCatalogue().then((result) => {
+      if (cancelled) return;
+      setPriceCheck(result.ok ? "ready" : "failed");
+      if (!result.ok) {
+        setPriceNotice("We couldn't check the latest prices. Please try again.");
+        return;
+      }
+      const notices: string[] = [];
+      if (result.priceChanged)
+        notices.push("A price changed. The new price is shown below.");
+      if (result.readinessChanged)
+        notices.push("A product's live-order status changed. Please review your bag.");
+      if (result.hasUnavailable)
+        notices.push("An item is no longer available. Remove it from your bag to continue.");
+      setPriceNotice(notices.join(" "));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, refreshCatalogue, priceCheckAttempt]);
+
   const shipping = SHIPPING_FEE;
   const total = subtotal + shipping;
   const testOnlyLines = lines.filter((line) => line.testOnly);
+  const unavailableLines = lines.filter((line) => line.unavailable);
   const liveCheckoutBlocked = !testMode && testOnlyLines.length > 0;
 
   const busy = useRef(false);
@@ -128,6 +159,18 @@ export function CheckoutForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (busy.current || pending) return;
+    if (priceCheck !== "ready") {
+      setError(
+        priceCheck === "failed"
+          ? "Refresh the current prices before paying."
+          : "Please wait while we check the current prices.",
+      );
+      return;
+    }
+    if (unavailableLines.length > 0) {
+      setError("Remove unavailable items from your bag before paying.");
+      return;
+    }
     if (liveCheckoutBlocked) {
       setError(
         "Live checkout is blocked until every size and colour has its Store SKU from Qikink. Remove this test-only item from your bag to continue.",
@@ -139,6 +182,33 @@ export function CheckoutForm({
     setError("");
     let received: PendingPayment | null = null;
     try {
+      const latest = await refreshCatalogue();
+      if (!latest.ok) {
+        setPriceCheck("failed");
+        setPriceNotice("We couldn't check the latest prices. Please try again.");
+        throw new Error("Refresh the current prices before paying.");
+      }
+      setPriceCheck("ready");
+      if (latest.hasUnavailable) {
+        setError("Remove unavailable items from your bag before paying.");
+        setPriceNotice(
+          "An item is no longer available. Remove it from your bag to continue.",
+        );
+        setState("idle");
+        return;
+      }
+      if (latest.priceChanged || latest.readinessChanged) {
+        setError(
+          "Your bag changed. Review the updated price and product status, then press Pay again.",
+        );
+        setPriceNotice(
+          latest.priceChanged
+            ? "A price changed. The new price is shown below; review it before paying."
+            : "A product's live-order status changed. Review your bag before paying.",
+        );
+        setState("idle");
+        return;
+      }
       const payload = {
         items: lines.map((l) => ({
           productSlug: l.slug,
@@ -531,6 +601,11 @@ export function CheckoutForm({
                       Test only · not for live orders
                     </span>
                   )}
+                  {line.unavailable && (
+                    <span className="mt-1 inline-block text-xs text-error">
+                      No longer available · remove it to continue
+                    </span>
+                  )}
                 </div>
                 <p className="text-[0.9rem] font-medium tabular-nums">
                   {formatINR(line.price * line.quantity)}
@@ -555,11 +630,40 @@ export function CheckoutForm({
           </dl>
 
           <p className="mt-3 text-xs text-muted">{SHIPPING_DETAIL}</p>
+          {priceCheck === "checking" && (
+            <p role="status" className="mt-4 text-xs text-muted">
+              Checking current prices…
+            </p>
+          )}
+          {priceNotice && (
+            <p
+              role={priceCheck === "failed" || unavailableLines.length ? "alert" : "status"}
+              className={`mt-4 text-xs leading-relaxed ${priceCheck === "failed" || unavailableLines.length ? "text-error" : "text-amber-800"}`}
+            >
+              {priceNotice}
+            </p>
+          )}
+          {priceCheck === "failed" && (
+            <button
+              type="button"
+              onClick={() => {
+                setError("");
+                setPriceCheckAttempt((attempt) => attempt + 1);
+              }}
+              className="mt-3 text-xs font-medium underline underline-offset-4"
+            >
+              Try checking again
+            </button>
+          )}
 
           <button
             type="submit"
             disabled={
-              state === "loading" || !onlineEnabled || liveCheckoutBlocked
+              state === "loading" ||
+              !onlineEnabled ||
+              priceCheck !== "ready" ||
+              unavailableLines.length > 0 ||
+              liveCheckoutBlocked
             }
             className="mt-7 flex w-full items-center justify-center gap-2.5 rounded-full bg-kalam py-4 text-[0.76rem] font-medium uppercase tracking-[0.18em] text-bone transition-transform hover:scale-[1.01] disabled:opacity-60"
           >
@@ -568,6 +672,12 @@ export function CheckoutForm({
                 <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
                 Processing payment…
               </>
+            ) : priceCheck === "checking" ? (
+              "Checking current prices…"
+            ) : priceCheck === "failed" ? (
+              "Refresh prices before paying"
+            ) : unavailableLines.length > 0 ? (
+              "Remove unavailable items"
             ) : liveCheckoutBlocked ? (
               "Test-only items can't be ordered live"
             ) : (

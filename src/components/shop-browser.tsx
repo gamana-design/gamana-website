@@ -13,6 +13,7 @@ import {
   type ProductLine,
 } from "@/data/catalog";
 import { cn } from "@/lib/utils";
+import { sortStorefrontProducts } from "@/lib/product-order";
 
 type SortKey = "featured" | "new" | "price-asc" | "price-desc" | "name";
 
@@ -64,11 +65,7 @@ export function ShopBrowser({ products, coreComingSoon = false, coreComingSoonTe
         list.sort((a, b) => Number(b.isNew ?? false) - Number(a.isNew ?? false));
         break;
       default:
-        list.sort(
-          (a, b) =>
-            Number(b.featured ?? false) - Number(a.featured ?? false) ||
-            a.name.localeCompare(b.name),
-        );
+        list = sortStorefrontProducts(list);
     }
     return list;
   }, [products, line, category, sort, dropId, selectedCampaign]);
