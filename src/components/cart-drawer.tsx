@@ -12,8 +12,17 @@ import { formatINR } from "@/lib/utils";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function CartDrawer() {
-  const { isOpen, close, lines, subtotal, count, setQuantity, remove } =
-    useCart();
+  const {
+    isOpen,
+    close,
+    lines,
+    subtotal,
+    count,
+    setQuantity,
+    remove,
+    hydrated,
+    refreshCatalogue,
+  } = useCart();
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -21,6 +30,10 @@ export function CartDrawer() {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && hydrated) void refreshCatalogue();
+  }, [isOpen, hydrated, refreshCatalogue]);
 
   return (
     <AnimatePresence>
@@ -125,6 +138,11 @@ export function CartDrawer() {
                             {line.testOnly && (
                               <span className="mt-1 inline-block text-xs text-amber-800">
                                 Test only · not for live orders
+                              </span>
+                            )}
+                            {line.unavailable && (
+                              <span className="mt-1 inline-block text-xs text-error">
+                                No longer available · remove to continue
                               </span>
                             )}
                           </div>
