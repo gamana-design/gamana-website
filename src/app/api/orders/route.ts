@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  isOrderPasswordConfigured,
+  orderAccessCookieName,
+  verifyOrderAccessSessionToken,
+} from "@/lib/order-access";
 import { getStoreProducts } from "@/lib/homepage-store";
 import { getAllProducts } from "@/lib/catalog-store";
 import { countStoreSkuUseCounts, normalizeStoreSku } from "@/lib/admin-product";
@@ -24,7 +29,22 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  if (!isOrderPasswordConfigured())
+    return NextResponse.json(
+      { error: "Checkout is temporarily paused while access is set up." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  if (
+    !verifyOrderAccessSessionToken(
+      request.cookies.get(orderAccessCookieName)?.value,
+    )
+  )
+    return NextResponse.json(
+      { error: "Enter the store password before placing an order." },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
+
   try {
     const body = await request.json().catch(() => {
       throw new CheckoutError("Invalid checkout request.");
